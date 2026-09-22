@@ -9,10 +9,11 @@ import yfinance as yf
 from flask import Flask, render_template, request, jsonify, session, Response
 
 app = Flask(__name__)
-app.secret_key = "omnivest_loading_screen_secret_2026"
+app.secret_key = "omnivest_phone_auth_secret_2026"
 
 USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
+GLOBAL_CSV_FILE = "global_master_investments.csv"
 
 def load_users():
     if os.path.exists(USERS_FILE):
@@ -28,38 +29,57 @@ def get_user_csv_filename(username):
     safe_user = re.sub(r'[^a-zA-Z0-9_]', '_', username)
     return f"{safe_user}_investment_portfolio.csv"
 
-def append_to_user_csv(username, block_index, timestamp, tx):
-    csv_file = get_user_csv_filename(username)
-    file_exists = os.path.exists(csv_file)
-    pf = tx.get('portfolio', {})
-    
-    with open(csv_file, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        if not file_exists:
+def ensure_global_csv():
+    if not os.path.exists(GLOBAL_CSV_FILE):
+        with open(GLOBAL_CSV_FILE, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
             writer.writerow([
                 "Block_Index", "Timestamp", "Tx_ID", "User", "Goal_Description",
                 "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level", "Block_Hash"
             ])
-        writer.writerow([
-            block_index,
-            time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
-            tx.get('tx_id'),
-            username,
-            tx.get('goal'),
-            tx.get('monthly_investment'),
-            tx.get('target_savings_goal'),
-            tx.get('tenure_years'),
-            tx.get('target_fund'),
-            pf.get('Stock_Market_Index', {}).get('pct', 0),
-            pf.get('Mutual_Funds', {}).get('pct', 0),
-            pf.get('Real_Estate_REITs', {}).get('pct', 0),
-            pf.get('Gold_Precious_Metals', {}).get('pct', 0),
-            pf.get('Cryptocurrency_BTC', {}).get('pct', 0),
-            tx.get('risk_profile'),
-            tx.get('block_hash', '')
-        ])
+
+def append_to_csvs(username, block_index, timestamp, tx):
+    ensure_global_csv()
+    pf = tx.get('portfolio', {})
+    row_data = [
+        block_index,
+        time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
+        tx.get('tx_id'),
+        username,
+        tx.get('goal'),
+        tx.get('monthly_investment'),
+        tx.get('target_savings_goal'),
+        tx.get('tenure_years'),
+        tx.get('target_fund'),
+        pf.get('Stock_Market_Index', {}).get('pct', 0),
+        pf.get('Mutual_Funds', {}).get('pct', 0),
+        pf.get('Real_Estate_REITs', {}).get('pct', 0),
+        pf.get('Gold_Precious_Metals', {}).get('pct', 0),
+        pf.get('Cryptocurrency_BTC', {}).get('pct', 0),
+        tx.get('risk_profile'),
+        tx.get('block_hash', '')
+    ]
+
+    # Append to global master CSV (Admin view)
+    with open(GLOBAL_CSV_FILE, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(row_data)
+
+    # Append to user-specific CSV
+    user_csv = get_user_csv_filename(username)
+    user_file_exists = os.path.exists(user_csv)
+    with open(user_csv, "a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not user_file_exists:
+            writer.writerow([
+                "Block_Index", "Timestamp", "Tx_ID", "User", "Goal_Description",
+                "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
+                "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
+                "Risk_Level", "Block_Hash"
+            ])
+        writer.writerow(row_data)
 
 # ==========================================
 # BLOCKCHAIN ENGINE
@@ -95,7 +115,7 @@ class Blockchain:
         self.load_chain()
 
     def create_genesis_block(self):
-        genesis = Block(0, time.time(), [{"system": "Loading Engine Genesis"}], "0")
+        genesis = Block(0, time.time(), [{"system": "Phone Auth Ledger Genesis"}], "0")
         genesis.mine_block(self.difficulty)
         self.chain.append(genesis)
         self.save_chain()
@@ -123,7 +143,7 @@ class Blockchain:
         
         for tx in self.pending_transactions:
             tx['block_hash'] = new_block.hash
-            append_to_user_csv(tx['user'], new_block.index, new_block.timestamp, tx)
+            append_to_csvs(tx['user'], new_block.index, new_block.timestamp, tx)
             
         self.chain.append(new_block)
         self.pending_transactions = []
@@ -135,6 +155,7 @@ class Blockchain:
         with open(self.storage_file, "w") as f: json.dump(serializable, f, indent=4)
 
     def load_chain(self):
+        ensure_global_csv()
         if os.path.exists(self.storage_file):
             try:
                 with open(self.storage_file, "r") as f:
@@ -173,23 +194,46 @@ def home(): return render_template('index.html')
 @app.route('/api/auth', methods=['POST'])
 def auth():
     data = request.json or {}
-    action = data.get('action'); u = data.get('username', '').strip(); p = data.get('password', '').strip()
-    if not u or not p: return jsonify({"status": "error", "message": "Required fields missing."}), 400
-    users = load_users(); pwd_hash = hashlib.sha256(p.encode()).hexdigest()
+    action = data.get('action')
+    username = data.get('username', '').strip()
+    phone = data.get('phone', '').strip()
+
+    if not username or not phone:
+        return jsonify({"status": "error", "message": "Please enter both your name and phone number."}), 400
+
+    users = load_users()
+    phone_hash = hashlib.sha256(phone.encode()).hexdigest()
+
     if action == 'signup':
-        if u in users: return jsonify({"status": "error", "message": "User exists."}), 400
-        users[u] = {"password": pwd_hash}; save_users(users); session['user'] = u
-        return jsonify({"status": "success", "username": u})
+        if username in users:
+            return jsonify({"status": "error", "message": "User already exists. Please sign in using your phone number."}), 400
+        users[username] = {"phone_hash": phone_hash}
+        save_users(users)
+        session['user'] = username
+        session['is_admin'] = (username.lower() == 'admin' and phone == '0000000000')
+        return jsonify({"status": "success", "username": username})
+
     elif action == 'login':
-        if u not in users or users[u]["password"] != pwd_hash: return jsonify({"status": "error", "message": "Invalid login."}), 401
-        session['user'] = u
-        return jsonify({"status": "success", "username": u})
+        if username not in users:
+            # Auto-register if returning with phone number for quick access
+            users[username] = {"phone_hash": phone_hash}
+            save_users(users)
+        elif users[username]["phone_hash"] != phone_hash:
+            return jsonify({"status": "error", "message": "Invalid phone number for this username."}), 401
+
+        session['user'] = username
+        session['is_admin'] = (username.lower() == 'admin' and phone == '0000000000')
+        return jsonify({"status": "success", "username": username})
 
 @app.route('/api/logout', methods=['POST'])
-def logout(): session.pop('user', None); return jsonify({"status": "success"})
+def logout():
+    session.pop('user', None)
+    session.pop('is_admin', None)
+    return jsonify({"status": "success"})
 
 @app.route('/api/current-session', methods=['GET'])
-def current_session(): return jsonify({"user": session.get('user')})
+def current_session():
+    return jsonify({"user": session.get('user'), "is_admin": session.get('is_admin', False)})
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
@@ -298,24 +342,48 @@ def execute():
 @app.route('/api/my-ledger', methods=['GET'])
 def my_ledger():
     if 'user' not in session: return jsonify({"status": "error"}), 401
-    u = session['user']; user_txs = []; tot_p, tot_m = 0, 0
+    u = session['user']
+    is_admin = session.get('is_admin', False)
+    user_txs = []
+    tot_p, tot_m = 0, 0
+
     for b in blockchain.chain:
         for tx in b.transactions:
-            if tx.get('user') == u:
+            # If admin, show all records. If regular user, show only their personal records.
+            if is_admin or tx.get('user') == u:
                 tot_p += float(tx.get('monthly_investment', 0)) * int(tx.get('tenure_years', 5)) * 12
                 tot_m += float(tx.get('target_fund', 0))
                 user_txs.append({"block_index": b.index, "block_hash": b.hash, "timestamp": time.strftime('%d %b %Y, %H:%M', time.localtime(b.timestamp)), "tx": tx})
-    return jsonify({"records": list(reversed(user_txs)), "summary": {"active_portfolios": len(user_txs), "total_principal": round(tot_p, 2), "total_projected": round(tot_m, 2), "total_gain": round(tot_m - tot_p, 2)}})
+
+    return jsonify({
+        "records": list(reversed(user_txs)),
+        "summary": {
+            "active_portfolios": len(user_txs),
+            "total_principal": round(tot_p, 2),
+            "total_projected": round(tot_m, 2),
+            "total_gain": round(tot_m - tot_p, 2)
+        }
+    })
 
 @app.route('/api/export-csv', methods=['GET'])
 def export_csv():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     u = session['user']
-    csv_file = get_user_csv_filename(u)
+    is_admin = session.get('is_admin', False)
+
+    if is_admin:
+        # Master download containing all investments by all users
+        csv_file = GLOBAL_CSV_FILE
+        filename = "global_master_investments.csv"
+    else:
+        # Personal download containing only the logged-in user's investments
+        csv_file = get_user_csv_filename(u)
+        filename = f"{u}_investment_portfolio.csv"
+
     if os.path.exists(csv_file):
         with open(csv_file, "r", encoding="utf-8") as f:
             content = f.read()
-        return Response(content, mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename={u}_investment_portfolio.csv"})
+        return Response(content, mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename={filename}"})
     return jsonify({"status": "error", "message": "No CSV records found."}), 404
 
 if __name__ == '__main__':
