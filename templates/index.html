@@ -27,9 +27,37 @@
         .portfolio-card { cursor: pointer; transition: all 0.2s ease; }
         .portfolio-card:hover { border-color: var(--accent); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .expanded-details { background: #f1f5f9; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px; display: none; }
+        
+        /* SMOOTH LOADING OVERLAY STYLES */
+        #loadingOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #loadingOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
+    <!-- LOADING SCREEN OVERLAY -->
+    <div id="loadingOverlay">
+        <div class="spinner-border text-info mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h5 class="fw-bold tracking-wide" id="loadingText">Processing AI Financial Model...</h5>
+        <p class="small text-light opacity-75">Please wait while we crunch compounding returns and secure your ledger.</p>
+    </div>
+
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i> Connecting to Live Markets...</div>
     </div>
@@ -83,7 +111,7 @@
                         
                         <div class="mb-3">
                             <label class="form-label small text-muted">Select Input Mode</label>
-                            <select id="planningMode" class="form-select border-secondary" onchange="markInputsChanged(); toggleModeInputs();">
+                            <select id="planningMode" class="form-select border-secondary" onchange="toggleModeInputs()">
                                 <option value="goal">Mode A: Goal Description & Tenure</option>
                                 <option value="budget">Mode B: Monthly Budget & Tenure</option>
                                 <option value="corpus">Mode C: Target Final Payout & Tenure</option>
@@ -92,12 +120,12 @@
 
                         <div class="mb-3" id="inputContainer">
                             <label class="form-label small text-muted">Statement of Intent (e.g. Trip to Italy)</label>
-                            <textarea id="statementInput" rows="3" class="form-control border-secondary" oninput="markInputsChanged()">I want to plan a luxury trip to Italy with family in 3 years.</textarea>
+                            <textarea id="statementInput" rows="3" class="form-control border-secondary">I want to plan a luxury trip to Italy with family in 3 years.</textarea>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label small text-muted">Tenure (Years)</label>
-                            <input type="number" id="yearsInput" class="form-control border-secondary" value="3" oninput="markInputsChanged()">
+                            <input type="number" id="yearsInput" class="form-control border-secondary" value="3">
                         </div>
 
                         <button class="btn btn-brand w-100 py-2" onclick="computeAiPlan()"><i class="fa-solid fa-bolt me-2"></i> Recalculate & Maximize Gains</button>
@@ -201,6 +229,15 @@
         let lastCalculatedParams = "";
         let isSubmitting = false;
 
+        function showLoading(msg = "Processing AI Financial Model...") {
+            document.getElementById('loadingText').innerText = msg;
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
         async function fetchMarketTicker() {
             try {
                 const res = await fetch('/api/market-prices');
@@ -224,39 +261,39 @@
             if (mode === 'goal') {
                 container.innerHTML = `
                     <label class="form-label small text-muted">Statement of Intent (e.g. Trip to Italy)</label>
-                    <textarea id="statementInput" rows="3" class="form-control border-secondary" oninput="markInputsChanged()">I want to plan a luxury trip to Italy with family in 3 years.</textarea>
+                    <textarea id="statementInput" rows="3" class="form-control border-secondary">I want to plan a luxury trip to Italy with family in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
                 container.innerHTML = `
                     <label class="form-label small text-muted">Monthly Willingness to Pay ($)</label>
-                    <input type="number" id="statementInput" class="form-control border-secondary" value="15000" oninput="markInputsChanged()">
+                    <input type="number" id="statementInput" class="form-control border-secondary" value="15000">
                 `;
             } else {
                 container.innerHTML = `
                     <label class="form-label small text-muted">Target Final Payout Corpus ($)</label>
-                    <input type="number" id="statementInput" class="form-control border-secondary" value="100000" oninput="markInputsChanged()">
+                    <input type="number" id="statementInput" class="form-control border-secondary" value="100000">
                 `;
             }
-            markInputsChanged();
-        }
-
-        function markInputsChanged() {
-            // Flag state change
         }
 
         async function handleAuth(action) {
             const u = document.getElementById('authUsername').value;
             const p = document.getElementById('authPassword').value;
-            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, username: u, password: p}) });
-            const data = await res.json();
-            if (res.ok) {
-                document.getElementById('authView').style.display = 'none';
-                document.getElementById('dashboardView').style.display = 'block';
-                document.getElementById('navUserArea').innerHTML = `<span class="text-muted small me-3">${data.username}</span><button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Logout</button>`;
-                loadLedger();
-            } else {
-                document.getElementById('authError').innerText = data.message;
-                document.getElementById('authError').style.display = 'block';
+            showLoading("Authenticating Client Profile...");
+            try {
+                const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, username: u, password: p}) });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('authView').style.display = 'none';
+                    document.getElementById('dashboardView').style.display = 'block';
+                    document.getElementById('navUserArea').innerHTML = `<span class="text-muted small me-3">${data.username}</span><button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Logout</button>`;
+                    loadLedger();
+                } else {
+                    document.getElementById('authError').innerText = data.message;
+                    document.getElementById('authError').style.display = 'block';
+                }
+            } finally {
+                hideLoading();
             }
         }
 
@@ -267,44 +304,48 @@
 
             lastCalculatedParams = `${mode}_${years}_${rawVal}`;
 
-            let statement = '';
-            let input_val = 0;
-            if (mode === 'goal') { statement = rawVal; } 
-            else { input_val = parseFloat(rawVal) || 0; }
+            showLoading("Analyzing Market Yields & Global Inflation...");
+            try {
+                let statement = '';
+                let input_val = 0;
+                if (mode === 'goal') { statement = rawVal; } 
+                else { input_val = parseFloat(rawVal) || 0; }
 
-            const res = await fetch('/api/analyze', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({mode, years, statement, input_val}) 
-            });
-            const { data } = await res.json();
-            activePlan = data;
+                const res = await fetch('/api/analyze', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({mode, years, statement, input_val}) 
+                });
+                const { data } = await res.json();
+                activePlan = data;
 
-            document.getElementById('aiEmpty').style.display = 'none';
-            document.getElementById('aiReady').style.display = 'block';
-            document.getElementById('resGoal').innerText = data.goal_identified;
-            document.getElementById('resRationale').innerText = data.ai_rationale;
-            document.getElementById('resMonthlySip').innerText = `$${data.monthly_allocation.toLocaleString()} / mo`;
-            document.getElementById('resTargetCorpus').innerText = `$${data.estimated_maturity_value.toLocaleString()}`;
+                document.getElementById('aiEmpty').style.display = 'none';
+                document.getElementById('aiReady').style.display = 'block';
+                document.getElementById('resGoal').innerText = data.goal_identified;
+                document.getElementById('resRationale').innerText = data.ai_rationale;
+                document.getElementById('resMonthlySip').innerText = `$${data.monthly_allocation.toLocaleString()} / mo`;
+                document.getElementById('resTargetCorpus').innerText = `$${data.estimated_maturity_value.toLocaleString()}`;
 
-            const tbody = document.getElementById('allotmentTableBody');
-            tbody.innerHTML = '';
-            for (const [k, v] of Object.entries(data.portfolio_breakdown)) {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${k.replace(/_/g, ' ')}</strong></td>
-                        <td>${v.pct}%</td>
-                        <td class="text-primary">$${v.amount.toLocaleString()}</td>
-                        <td class="text-success">$${v.projected_return.toLocaleString()} <small class="text-muted">(${v.cagr})</small></td>
-                    </tr>
-                `;
+                const tbody = document.getElementById('allotmentTableBody');
+                tbody.innerHTML = '';
+                for (const [k, v] of Object.entries(data.portfolio_breakdown)) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${k.replace(/_/g, ' ')}</strong></td>
+                            <td>${v.pct}%</td>
+                            <td class="text-primary">$${v.amount.toLocaleString()}</td>
+                            <td class="text-success">$${v.projected_return.toLocaleString()} <small class="text-muted">(${v.cagr})</small></td>
+                        </tr>
+                    `;
+                }
+            } finally {
+                hideLoading();
             }
         }
 
         function promptTermsAndConditions() {
             if (!activePlan) return;
             
-            // Check if parameters changed without recalculating
             const mode = document.getElementById('planningMode').value;
             const years = document.getElementById('yearsInput').value;
             const rawVal = document.getElementById('statementInput').value;
@@ -312,7 +353,7 @@
 
             if (currentParams !== lastCalculatedParams) {
                 if (!confirm("Your planning inputs have changed since your last calculation. Would you like to recalculate first?")) {
-                    return; // User chooses to recalculate
+                    return;
                 }
             }
 
@@ -335,9 +376,7 @@
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) modalInstance.hide();
 
-            const btn = document.getElementById('btnCommit');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Sealing Block & Updating Master CSV...`;
+            showLoading("Mining Cryptographic Proof & Updating Master CSV...");
 
             try {
                 const res = await fetch('/api/execute-investment', { 
@@ -352,8 +391,7 @@
                 console.error(e);
             } finally {
                 isSubmitting = false;
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fa-solid fa-shield-halved me-2"></i> Seal to Blockchain & Master CSV`;
+                hideLoading();
             }
         }
 
