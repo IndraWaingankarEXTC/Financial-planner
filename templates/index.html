@@ -28,30 +28,17 @@
         .portfolio-card:hover { border-color: var(--accent); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .expanded-details { background: #f1f5f9; border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px; display: none; }
         
-        /* SMOOTH LOADING OVERLAY STYLES */
         #loadingOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffffff;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #ffffff;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        #loadingOverlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        #loadingOverlay.active { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
-    <!-- LOADING SCREEN OVERLAY -->
     <div id="loadingOverlay">
         <div class="spinner-border text-info mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
         <h5 class="fw-bold tracking-wide" id="loadingText">Processing AI Financial Model...</h5>
@@ -72,19 +59,19 @@
     </nav>
 
     <div class="container pb-5">
-        <!-- Auth View -->
+        <!-- Auth View (Name + Phone Number Login) -->
         <div id="authView" class="row justify-content-center my-5">
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
                     <h4 class="fw-bold text-center mb-2">Client Portal</h4>
-                    <p class="text-muted small text-center mb-4">Sign in to manage your unified master CSV file and encrypted ledger.</p>
+                    <p class="text-muted small text-center mb-4">Log in using your Name and Phone Number. (Master Admin: <code>admin</code> / <code>0000000000</code>)</p>
                     <div class="mb-3">
-                        <label class="form-label small text-muted">Username</label>
-                        <input type="text" id="authUsername" class="form-control border-secondary">
+                        <label class="form-label small text-muted">Your Full Name</label>
+                        <input type="text" id="authUsername" class="form-control border-secondary" placeholder="e.g. John Doe">
                     </div>
                     <div class="mb-4">
-                        <label class="form-label small text-muted">Password</label>
-                        <input type="password" id="authPassword" class="form-control border-secondary">
+                        <label class="form-label small text-muted">Phone Number</label>
+                        <input type="tel" id="authPhone" class="form-control border-secondary" placeholder="e.g. 9876543210">
                     </div>
                     <div class="d-flex gap-2">
                         <button class="btn btn-brand flex-grow-1" onclick="handleAuth('login')">Sign In</button>
@@ -185,8 +172,8 @@
             <!-- Ledger Cards -->
             <div class="card-custom p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-link text-success me-2"></i> My Unified Ledger & Master CSV Record</h5>
-                    <a href="/api/export-csv" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-file-excel me-1"></i> Download Master CSV File</a>
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-link text-success me-2"></i> <span id="ledgerTitleText">My Unified Ledger</span></h5>
+                    <a href="/api/export-csv" class="btn btn-sm btn-outline-success" id="csvDownloadBtn"><i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement</a>
                 </div>
                 <div id="ledgerContainer" class="d-flex flex-column gap-3"></div>
             </div>
@@ -277,17 +264,14 @@
         }
 
         async function handleAuth(action) {
-            const u = document.getElementById('authUsername').value;
-            const p = document.getElementById('authPassword').value;
-            showLoading("Authenticating Client Profile...");
+            const u = document.getElementById('authUsername').value.trim();
+            const phone = document.getElementById('authPhone').value.trim();
+            showLoading("Authenticating User via Phone Number...");
             try {
-                const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, username: u, password: p}) });
+                const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action, username: u, phone}) });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('authView').style.display = 'none';
-                    document.getElementById('dashboardView').style.display = 'block';
-                    document.getElementById('navUserArea').innerHTML = `<span class="text-muted small me-3">${data.username}</span><button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Logout</button>`;
-                    loadLedger();
+                    location.reload();
                 } else {
                     document.getElementById('authError').innerText = data.message;
                     document.getElementById('authError').style.display = 'block';
@@ -295,6 +279,11 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.reload();
         }
 
         async function computeAiPlan() {
@@ -376,7 +365,7 @@
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance) modalInstance.hide();
 
-            showLoading("Mining Cryptographic Proof & Updating Master CSV...");
+            showLoading("Mining Cryptographic Proof & Synchronizing CSV...");
 
             try {
                 const res = await fetch('/api/execute-investment', { 
@@ -405,6 +394,17 @@
         }
 
         async function loadLedger() {
+            const sessionRes = await fetch('/api/current-session');
+            const sessionData = await sessionRes.json();
+            
+            if (sessionData.is_admin) {
+                document.getElementById('ledgerTitleText').innerText = "GLOBAL MASTER LEDGER (Admin View: All Users)";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV`;
+            } else {
+                document.getElementById('ledgerTitleText').innerText = "My Personal Investment Ledger";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Personal CSV Statement`;
+            }
+
             const res = await fetch('/api/my-ledger');
             const data = await res.json();
             document.getElementById('statPortfolios').innerText = data.summary.active_portfolios;
@@ -424,7 +424,10 @@
                 container.innerHTML += `
                     <div class="card-custom p-3 portfolio-card" onclick="toggleExpand('details_${item.block_index}')">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="badge bg-primary">Block #${item.block_index} (Click to Expand Detailed Plan)</span>
+                            <div>
+                                <span class="badge bg-primary">Block #${item.block_index}</span>
+                                <span class="badge bg-secondary ms-1">Client: ${tx.user}</span>
+                            </div>
                             <small class="text-muted">${item.timestamp}</small>
                         </div>
                         <h6 class="text-dark fw-bold">${tx.goal} <span class="badge bg-danger ms-2">Max-Gain</span></h6>
@@ -449,7 +452,10 @@
             if (data.user) {
                 document.getElementById('authView').style.display = 'none';
                 document.getElementById('dashboardView').style.display = 'block';
-                document.getElementById('navUserArea').innerHTML = `<span class="text-muted small me-3">${data.user}</span><button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Logout</button>`;
+                document.getElementById('navUserArea').innerHTML = `
+                    <span class="text-muted small me-3"><i class="fa-solid fa-user-check text-success me-1"></i> ${data.user} ${data.is_admin ? '(Master Admin)' : ''}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="logout()">Sign Out</button>
+                `;
                 loadLedger();
             }
         });
