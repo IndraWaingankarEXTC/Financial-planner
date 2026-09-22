@@ -9,7 +9,7 @@ import yfinance as yf
 from flask import Flask, render_template, request, jsonify, session, Response
 
 app = Flask(__name__)
-app.secret_key = "omnivest_deterministic_secret_2026"
+app.secret_key = "omnivest_loading_screen_secret_2026"
 
 USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
@@ -95,7 +95,7 @@ class Blockchain:
         self.load_chain()
 
     def create_genesis_block(self):
-        genesis = Block(0, time.time(), [{"system": "Deterministic Ledger Genesis"}], "0")
+        genesis = Block(0, time.time(), [{"system": "Loading Engine Genesis"}], "0")
         genesis.mine_block(self.difficulty)
         self.chain.append(genesis)
         self.save_chain()
@@ -221,7 +221,7 @@ def analyze():
             target_corpus = max(input_val if input_val > 0 else 35000, 10000)
             goal_title = statement if statement else "Target Goal Portfolio"
         
-        expected_rate = 0.145 # Stable deterministic high-yield rate
+        expected_rate = 0.145
         r = expected_rate / 12
         n = years * 12
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
@@ -245,7 +245,6 @@ def analyze():
         total_invested = round(monthly_sip * n, 2)
         goal_title = "Fixed Corpus Target Builder"
 
-    # Deterministic Optimized Allocation Matrix (Ensures same inputs produce identical optimal weights)
     raw_weights = {
         "Stock_Market_Index": {"pct": 40.0, "cagr": 15.0},
         "Cryptocurrency_BTC": {"pct": 25.0, "cagr": 22.0},
