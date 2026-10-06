@@ -15,7 +15,7 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 app = Flask(__name__)
-app.secret_key = "omnivest_inr_travel_tiers_2026"
+app.secret_key = "omnivest_inr_rupees_2026"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
@@ -42,7 +42,7 @@ def ensure_global_csv():
         with open(GLOBAL_CSV_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([
-                "Record_ID", "Timestamp", "User", "Goal_Description", "Travel_Style",
+                "Record_ID", "Timestamp", "User", "Goal_Description",
                 "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
@@ -56,7 +56,6 @@ def append_to_csvs(username, record_id, timestamp, tx):
         time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
         username,
         tx.get('goal'),
-        tx.get('travel_style', 'Standard'),
         tx.get('monthly_investment'),
         tx.get('target_savings_goal'),
         tx.get('tenure_years'),
@@ -78,7 +77,7 @@ def append_to_csvs(username, record_id, timestamp, tx):
         writer = csv.writer(f)
         if not file_exists:
             writer.writerow([
-                "Record_ID", "Timestamp", "User", "Goal_Description", "Travel_Style",
+                "Record_ID", "Timestamp", "User", "Goal_Description",
                 "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
@@ -96,43 +95,40 @@ def save_ledger(ledger):
     with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
 # ==========================================
-# AI ESTIMATION WITH TRAVEL TIER & RISK PROFILE
+# AI ESTIMATION & ADAPTIVE ALLOCATION (INR)
 # ==========================================
-def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, travel_style, risk_tier):
+def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus):
     if not (GENAI_AVAILABLE and GEMINI_API_KEY):
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = f"""
-You are an expert financial and travel advisor for an Indian investor planning in Indian Rupees (₹ / INR).
-Inputs:
-- Intent / Destination: "{intent_text}"
-- Mode: {mode} (goal = user has destination, budget = user has monthly budget in INR, corpus = user has fixed target corpus in INR)
-- Value (if applicable): {budget_or_corpus}
-- Tenure: {tenure_years} years
-- Selected Travel Style: {travel_style} (budget = backpacker/hostels, mid = 3-star standard/hotels, luxury = 5-star/private tours)
-- Selected Risk Appetite: {risk_tier} (low = capital preservation, mid = balanced growth, high = aggressive equity & crypto)
+You are an expert financial planning AI. Analyze this travel and wealth goal for an Indian investor using Indian Rupees (₹ / INR):
+User Query: "{intent_text}"
+Mode: {mode} (goal = user stated destination/trip, budget = monthly budget in INR, corpus = target payout in INR)
+Provided Value in INR: {budget_or_corpus}
+Tenure in Years: {tenure_years}
 
-Instructions:
-1. For mode 'goal':
-   - Calculate realistic round-trip flights from India + hotel/living cost based strictly on the selected travel_style:
-     * budget: hostel/budget stays, street/local food, public transit
-     * mid: comfortable 3-4 star stays, cafes/restaurants, city transit
-     * luxury: 4-5 star luxury hotels, fine dining, private taxis
-   - Apply 4% annual travel inflation across {tenure_years} years + 10% contingency buffer.
-   - Return target_corpus in INR.
-2. For risk_tier allocation:
-   - 'low': 0% Cryptocurrency_BTC, 15% Stock_Market_Index, 40% Mutual_Funds, 25% Real_Estate_REITs, 20% Gold_Precious_Metals.
-   - 'mid': 5% Cryptocurrency_BTC, 40% Stock_Market_Index, 25% Mutual_Funds, 15% Real_Estate_REITs, 15% Gold_Precious_Metals.
-   - 'high': 20% Cryptocurrency_BTC, 45% Stock_Market_Index, 15% Mutual_Funds, 10% Real_Estate_REITs, 10% Gold_Precious_Metals.
-   - All 5 allocation percentages must sum to EXACTLY 100.
+Tasks:
+1. If mode is 'goal', estimate realistic expenses in Indian Rupees (₹):
+   - Identify destination country/city and duration.
+   - Estimate flights from India + accommodation/daily expenses in INR.
+   - Adjust for 4% yearly travel inflation over {tenure_years} years + a 10% safety buffer.
+   - Output estimated final target corpus in INR (₹).
+2. If mode is 'budget', compute expected maturity based on provided monthly INR savings.
+3. If mode is 'corpus', target that exact corpus in INR.
+4. Dynamically allocate asset weights based on tenure:
+   - Short tenures (< 2 yrs): LOW crypto (0-5%) for stability.
+   - Long tenures (>= 3 yrs): 10-25% crypto for higher capital growth.
+   - Ensure pct values of Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC SUM EXACTLY TO 100.
 
-Return STRICT raw JSON (no markdown fences, no backticks):
+Return strictly raw JSON format (no markdown fences, no backticks):
 {{
   "destination_title": "string",
   "target_corpus": number,
-  "ai_rationale": "Detailed explanation of estimated expenses for {travel_style} style and {risk_tier} portfolio strategy",
+  "ai_rationale": "string explanation of pricing and asset allocation in INR",
+  "risk_profile": "Conservative / Balanced / Aggressive High-Yield",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -163,12 +159,15 @@ def get_market_prices():
         "Gold (per 10g)": "GC=F",
         "BSE SENSEX": "^BSESN"
     }
+    
+    # Accurate INR fallbacks
     fallbacks = {
         "Bitcoin (BTC)": {"price": 6250000.0, "change": 1.45, "status": "up"},
         "NIFTY 50": {"price": 25200.0, "change": 0.40, "status": "up"},
         "Gold (per 10g)": {"price": 78500.0, "change": -0.25, "status": "down"},
         "BSE SENSEX": {"price": 82100.0, "change": 0.35, "status": "up"}
     }
+
     live_data = {}
     for name, symbol in tickers.items():
         try:
@@ -183,6 +182,7 @@ def get_market_prices():
                 live_data[name] = fallbacks[name]
         except Exception:
             live_data[name] = fallbacks[name]
+            
     return jsonify({"status": "success", "market": live_data})
 
 @app.route('/')
@@ -233,98 +233,63 @@ def current_session():
 def analyze():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}
-
+    
     mode = data.get('mode', 'goal')
     years = max(int(data.get('years', 3)), 1)
     statement = data.get('statement', '').strip()
     input_val = float(data.get('input_val', 0) or 0)
-    travel_style = data.get('travel_style', 'mid')
-    risk_tier = data.get('risk_tier', 'mid')
 
-    # CAGR and Expected Annual Returns mapped by Risk Tier
-    risk_configs = {
-        "low": {
-            "expected_rate": 0.085,
-            "label": "Low Risk (Capital Protection)",
-            "allocation": {
-                "Stock_Market_Index": 15.0,
-                "Mutual_Funds": 40.0,
-                "Real_Estate_REITs": 25.0,
-                "Gold_Precious_Metals": 20.0,
-                "Cryptocurrency_BTC": 0.0
-            }
-        },
-        "mid": {
-            "expected_rate": 0.125,
-            "label": "Mid Risk (Balanced Growth)",
-            "allocation": {
-                "Stock_Market_Index": 40.0,
-                "Mutual_Funds": 25.0,
-                "Real_Estate_REITs": 15.0,
-                "Gold_Precious_Metals": 15.0,
-                "Cryptocurrency_BTC": 5.0
-            }
-        },
-        "high": {
-            "expected_rate": 0.160,
-            "label": "High Risk (Aggressive Compounder)",
-            "allocation": {
-                "Stock_Market_Index": 45.0,
-                "Mutual_Funds": 15.0,
-                "Real_Estate_REITs": 10.0,
-                "Gold_Precious_Metals": 10.0,
-                "Cryptocurrency_BTC": 20.0
-            }
-        }
-    }
-
-    selected_risk = risk_configs.get(risk_tier, risk_configs["mid"])
-
-    ai_result = call_ai_financial_planner(statement, years, mode, input_val, travel_style, risk_tier)
+    ai_result = call_ai_financial_planner(statement, years, mode, input_val)
 
     if ai_result:
         goal_title = ai_result.get("destination_title", statement)
         target_corpus = float(ai_result.get("target_corpus", 250000))
-        ai_rationale = ai_result.get("ai_rationale", "")
-        allocation = ai_result.get("allocation_pcts", selected_risk["allocation"])
+        ai_rationale = ai_result.get("ai_rationale", "AI calculated based on destination costs and duration in INR.")
+        risk_profile = ai_result.get("risk_profile", "AI Optimized Growth Strategy")
+        allocation = ai_result.get("allocation_pcts", {})
     else:
-        # Rule-based calculation if AI is offline
-        goal_title = statement if statement else "Wealth Goal"
-        style_multipliers = {"budget": 0.55, "mid": 1.0, "luxury": 2.1}
-        mult = style_multipliers.get(travel_style, 1.0)
-
+        # Heuristic fallback in Indian Rupees
+        goal_title = statement if statement else "Wealth Target"
         if mode == 'goal':
-            is_budget_dest = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
-            base_inr = (85000 if is_budget_dest else 250000) * mult
-            target_corpus = round(base_inr * ((1.04) ** years) * 1.10, 2)
+            is_budget = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
+            base_inr = 85000 if is_budget else 320000
+            target_corpus = round(base_inr * ((1.04) ** years) * 1.15, 2)
         elif mode == 'budget':
-            target_corpus = round(max(input_val, 5000) * 12 * years * (1 + selected_risk["expected_rate"]), 2)
+            target_corpus = round(max(input_val, 5000) * 12 * years * 1.35, 2)
         else:
             target_corpus = max(input_val, 100000)
 
-        ai_rationale = f"Calibrated for {travel_style.capitalize()} style travel and a {selected_risk['label']} model."
-        allocation = selected_risk["allocation"]
+        ai_rationale = f"Calculated using Indian travel inflation rates and {years}-year compounding."
+        risk_profile = "Balanced Compound Growth"
 
-    # Monthly SIP using Annuity Math
-    expected_rate = selected_risk["expected_rate"]
+        crypto_pct = 5.0 if years <= 1 else (15.0 if years <= 3 else 25.0)
+        allocation = {
+            "Stock_Market_Index": 40.0,
+            "Cryptocurrency_BTC": crypto_pct,
+            "Mutual_Funds": 20.0 - (crypto_pct - 5.0),
+            "Real_Estate_REITs": 20.0,
+            "Gold_Precious_Metals": 15.0
+        }
+
+    expected_rate = 0.145
     r = expected_rate / 12
     n = years * 12
     monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
     total_invested = round(monthly_sip * n, 2)
 
     cagr_map = {
-        "Stock_Market_Index": 14.0,
-        "Cryptocurrency_BTC": 24.0,
-        "Mutual_Funds": 11.5,
-        "Real_Estate_REITs": 10.0,
-        "Gold_Precious_Metals": 9.0
+        "Stock_Market_Index": 15.0,
+        "Cryptocurrency_BTC": 22.0,
+        "Mutual_Funds": 12.5,
+        "Real_Estate_REITs": 11.0,
+        "Gold_Precious_Metals": 9.5
     }
 
     portfolio_detailed = {}
     for asset, pct in allocation.items():
         pct_val = float(pct)
         allocated_principal = round(total_invested * (pct_val / 100.0), 2)
-        cagr = cagr_map.get(asset, 11.0)
+        cagr = cagr_map.get(asset, 12.0)
         projected_return = round(allocated_principal * ((1 + (cagr/100.0)) ** years), 2)
         portfolio_detailed[asset] = {
             "pct": pct_val,
@@ -337,8 +302,7 @@ def analyze():
         "status": "success",
         "data": {
             "goal_identified": goal_title,
-            "travel_style": travel_style.capitalize(),
-            "risk_profile": selected_risk["label"],
+            "risk_profile": risk_profile,
             "tenure_years": years,
             "monthly_allocation": monthly_sip,
             "target_savings_goal": target_corpus,
@@ -355,14 +319,13 @@ def analyze():
 def execute():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}; plan = data.get('plan', {}); u = session['user']
-
+    
     ledger = load_ledger()
     record_id = len(ledger) + 1
     tx = {
         "record_id": record_id,
         "user": u,
         "goal": plan.get('goal_identified'),
-        "travel_style": plan.get('travel_style', 'Standard'),
         "monthly_investment": plan.get('monthly_allocation'),
         "target_savings_goal": plan.get('target_savings_goal'),
         "target_fund": plan.get('estimated_maturity_value'),
