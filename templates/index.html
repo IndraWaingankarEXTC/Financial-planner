@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Custom Travel & Wealth Planner (₹ INR)</title>
+    <title>OmniVest | Global Travel & Wealth Planner (₹ INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,7 @@
             --accent-mint: #10b981;
             --accent-rose: #f43f5e;
             --text-dark: #0f172a;
+            --text-muted: #64748b;
             --card-radius: 24px;
             --button-radius: 16px;
         }
@@ -36,12 +37,16 @@
             box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
             transition: all 0.25s ease;
         }
+        .card-custom:hover {
+            box-shadow: 0 18px 32px -8px rgba(79, 70, 229, 0.14);
+        }
 
         .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
         .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
+        /* Currency Ticker */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(8px);
@@ -63,6 +68,7 @@
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
+        /* Buttons */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
@@ -88,11 +94,16 @@
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
         }
+        .btn-confirm-deal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.45);
+            color: #fff;
+        }
 
         .form-control, .form-select {
-            border-radius: 14px;
+            border-radius: 16px;
             border: 2px solid #cbd5e1;
-            padding: 10px 14px;
+            padding: 11px 16px;
             font-weight: 600;
         }
         .form-control:focus, .form-select:focus {
@@ -100,7 +111,7 @@
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
-        /* CURRENCY ANIMATION */
+        /* MULTI-CURRENCY SPREAD ANIMATION */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -117,27 +128,47 @@
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
 
-        .currency-spread { display: flex; gap: 12px; margin-bottom: 20px; }
+        .currency-spread {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
         .currency-badge {
-            width: 54px; height: 54px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; font-weight: 800; color: white;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
             box-shadow: 0 8px 18px rgba(0,0,0,0.12);
             animation: floatCurrency 1.2s infinite alternate ease-in-out;
         }
-        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); }
+        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); animation-delay: 0s; }
         .curr-usd { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation-delay: 0.15s; }
         .curr-eur { background: linear-gradient(135deg, #6366f1, #4338ca); animation-delay: 0.3s; }
         .curr-yen { background: linear-gradient(135deg, #ec4899, #be185d); animation-delay: 0.45s; }
         .curr-gbp { background: linear-gradient(135deg, #f59e0b, #d97706); animation-delay: 0.6s; }
+        .curr-thb { background: linear-gradient(135deg, #06b6d4, #0891b2); animation-delay: 0.75s; }
 
         @keyframes floatCurrency {
             0% { transform: translateY(0) scale(0.95); }
             100% { transform: translateY(-16px) scale(1.05); }
         }
 
-        .nav-pills { background: #eef2ff; padding: 6px; border-radius: 20px; }
-        .nav-pills .nav-link { border-radius: 16px; font-weight: 700; color: #64748b; padding: 10px 18px; }
+        .nav-pills {
+            background: #eef2ff;
+            padding: 6px;
+            border-radius: 20px;
+        }
+        .nav-pills .nav-link {
+            border-radius: 16px;
+            font-weight: 700;
+            color: #64748b;
+            padding: 10px 18px;
+        }
         .nav-pills .nav-link.active {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: #fff !important;
@@ -145,17 +176,28 @@
         }
 
         .portfolio-bubble {
-            border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: #ffffff;
+            cursor: pointer;
             transition: all 0.2s ease;
         }
+        .portfolio-bubble:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.1);
+        }
         .expanded-details {
-            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 12px; margin-top: 10px; display: none;
+            background: #f8fafc;
+            border-top: 1px dashed #cbd5e1;
+            padding: 12px;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Currency Loader -->
+    <!-- MULTI-CURRENCY LOADING SPREAD -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -163,30 +205,32 @@
             <div class="currency-badge curr-eur">€</div>
             <div class="currency-badge curr-yen">¥</div>
             <div class="currency-badge curr-gbp">£</div>
+            <div class="currency-badge curr-thb">฿</div>
         </div>
-        <h4 class="fw-bold text-dark" id="loadingText">Configuring Your Custom Plan...</h4>
-        <p class="text-muted small fw-semibold">Consulting AI for style, risk model, and target SIP (₹ INR)...</p>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Global Travel Costs...</h4>
+        <p class="text-muted small fw-semibold">Consulting AI for destination living indices & compound yields (₹ INR)...</p>
     </div>
 
-    <!-- Ticker -->
+    <!-- Live Market Strip -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
-            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live Indian indices...
+            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live Indian & Global indices...
         </div>
     </div>
 
+    <!-- Navigation -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">₹ INR</span>
-                OmniVest <span class="text-muted ms-2 fs-6 fw-semibold">Custom Wealth & Travel</span>
+                OmniVest <span class="text-muted ms-2 fs-6 fw-semibold">Wealth & Goal Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
     </nav>
 
     <div class="container pb-5">
-        <!-- Auth View -->
+        <!-- Login Screen (Always Mandatory) -->
         <div id="authView" class="row justify-content-center my-4">
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
@@ -195,9 +239,10 @@
                             <span class="badge bg-success-subtle text-success border fs-5">₹</span>
                             <span class="badge bg-primary-subtle text-primary border fs-5">$</span>
                             <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
+                            <span class="badge bg-danger-subtle text-danger border fs-5">¥</span>
                         </div>
                         <h4 class="fw-bold">Sign In to OmniVest</h4>
-                        <p class="text-muted small">Choose your options & tailor your trip investments.</p>
+                        <p class="text-muted small">Access your multi-asset investment records.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
@@ -214,6 +259,7 @@
                     </ul>
 
                     <div class="tab-content" id="loginTabContent">
+                        <!-- Customer Pane -->
                         <div class="tab-pane fade show active" id="customerPane" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-dark">Your Name</label>
@@ -228,6 +274,7 @@
                             </button>
                         </div>
 
+                        <!-- Admin Pane -->
                         <div class="tab-pane fade" id="adminPane" role="tabpanel">
                             <div class="p-3 rounded-3 bg-light border mb-3 small">
                                 <strong class="text-primary">Admin Access:</strong><br>
@@ -255,6 +302,7 @@
 
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
+            <!-- Stat Bar in INR -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-1 p-3 text-center">
@@ -276,44 +324,24 @@
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-4 p-3 text-center">
-                        <small class="text-danger fw-bold">Final Corpus</small>
+                        <small class="text-danger fw-bold">Final Target Corpus</small>
                         <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Planner Form -->
+            <!-- Planner Form & Allocation -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
+                        <h5 class="fw-bold mb-3 text-dark">Plan Your Target (₹)</h5>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Strategy Mode</label>
+                            <label class="form-label small fw-bold text-muted">Select Strategy Mode</label>
                             <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
-                                <option value="goal">Goal & Trip Destination</option>
+                                <option value="goal">Goal & Trip Duration (e.g. Nepal for 7 days vs Netherlands)</option>
                                 <option value="budget">Monthly Savings Willingness (₹)</option>
                                 <option value="corpus">Exact Target Corpus Amount (₹)</option>
-                            </select>
-                        </div>
-
-                        <!-- Travel Luxury Level (Shown for Goal Mode) -->
-                        <div class="mb-3" id="travelStyleContainer">
-                            <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
-                            <select id="travelStyleInput" class="form-select border-primary-subtle">
-                                <option value="budget">🎒 Backpacker / Tight Budget (Hostels, local transit)</option>
-                                <option value="mid" selected>🏨 Mid-Range Comfort (3-4 star stays, tours)</option>
-                                <option value="luxury">✨ Luxury / Premium (5-star hotels, private transfers)</option>
-                            </select>
-                        </div>
-
-                        <!-- Universal Risk Appetite Selector -->
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Investment Risk Tolerance</label>
-                            <select id="riskTierInput" class="form-select border-info-subtle">
-                                <option value="low">🛡️ Low Risk (Capital Preservation: Debt, FDs, Gold, Index ~8.5%)</option>
-                                <option value="mid" selected>⚖️ Mid Risk (Balanced Growth: 40% Stocks, Mutual Funds, 5% BTC ~12.5%)</option>
-                                <option value="high">🚀 High Risk (Aggressive: 45% Equity, 20% BTC/Crypto ~16.0%)</option>
                             </select>
                         </div>
 
@@ -328,32 +356,28 @@
                         </div>
 
                         <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
-                            Calculate Custom Plan (₹ INR)
+                            Calculate Plan (₹ INR)
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
                     <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-dark">Asset Allocation & Returns</h5>
+                        <h5 class="fw-bold mb-3 text-dark">Optimal Asset Allocation (₹)</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
                             <div class="d-inline-flex gap-2 mb-3">
                                 <span class="badge bg-light text-dark border p-2 fs-4">₹</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
-                                <span class="badge bg-light text-dark border p-2 fs-4">€</span>
+                                <span class="badge bg-light text-dark border p-2 fs-4">¥</span>
                             </div>
-                            <p>Choose your comfort style & risk tolerance on the left, then click <strong>Calculate Custom Plan</strong>.</p>
+                            <p>Enter any destination worldwide or budget on the left and tap <strong>Calculate Plan</strong>.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
                                 <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Optimal Yield</span>
-                            </div>
-                            <div class="mb-2">
-                                <span class="badge bg-light text-dark border me-1" id="styleBadge">Comfort: Standard</span>
-                                <span class="badge bg-info-subtle text-info border" id="tenureBadge">3 Years</span>
                             </div>
                             <p class="small text-muted mb-3" id="resRationale"></p>
 
@@ -409,7 +433,7 @@
         </div>
     </div>
 
-    <!-- T&C Modal -->
+    <!-- MANDATORY TERMS & CONDITIONS MODAL -->
     <div class="modal fade" id="tncModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 rounded-4">
@@ -422,9 +446,9 @@
                 <div class="modal-body py-3">
                     <p class="small text-muted mb-2">Please acknowledge the disclosures before fixing your deal:</p>
                     <ol class="small text-secondary ps-3 mb-3">
-                        <li class="mb-2"><strong>Risk & Market Volatility:</strong> Expected CAGR rates vary based on your selected risk profile (Low/Mid/High).</li>
+                        <li class="mb-2"><strong>Market Volatility:</strong> Asset compounding rates fluctuate based on market movements.</li>
                         <li class="mb-2"><strong>Fixed Duration:</strong> Portfolios are optimized for the complete target tenure.</li>
-                        <li class="mb-2"><strong>Travel Style Adjustments:</strong> Final costs depend on your chosen comfort tier (Budget vs Luxury).</li>
+                        <li class="mb-2"><strong>Indian Rupee Calibration:</strong> All values are calculated in INR based on prevailing exchange rates and inflation.</li>
                     </ol>
                     <div class="form-check p-3 bg-light rounded-3 border">
                         <input class="form-check-input ms-0 me-2" type="checkbox" id="agreeTncCheck" onchange="toggleTncButton()">
@@ -481,22 +505,17 @@
         function toggleModeInputs() {
             const mode = document.getElementById('planningMode').value;
             const container = document.getElementById('inputContainer');
-            const styleContainer = document.getElementById('travelStyleContainer');
-
             if (mode === 'goal') {
-                styleContainer.style.display = 'block';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Destination & Duration</label>
                     <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
-                styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
                     <input type="number" id="statementInput" class="form-control" value="10000">
                 `;
             } else {
-                styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
                     <input type="number" id="statementInput" class="form-control" value="500000">
@@ -552,10 +571,8 @@
             const mode = document.getElementById('planningMode').value;
             const years = document.getElementById('yearsInput').value;
             const rawVal = document.getElementById('statementInput').value;
-            const travel_style = document.getElementById('travelStyleInput').value;
-            const risk_tier = document.getElementById('riskTierInput').value;
 
-            showLoading("Calculating your custom strategy in ₹ INR...");
+            showLoading("Consulting AI for destination costs & growth rates (₹)...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -563,7 +580,7 @@
                 const res = await fetch('/api/analyze', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({mode, years, statement, input_val, travel_style, risk_tier}) 
+                    body: JSON.stringify({mode, years, statement, input_val}) 
                 });
                 const { data } = await res.json();
                 activePlan = data;
@@ -572,8 +589,6 @@
                 document.getElementById('aiReady').style.display = 'block';
                 document.getElementById('resGoal').innerText = data.goal_identified;
                 document.getElementById('riskBadge').innerText = data.risk_profile;
-                document.getElementById('styleBadge').innerText = `Style: ${data.travel_style}`;
-                document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years Tenure`;
                 document.getElementById('resRationale').innerText = data.ai_rationale;
                 document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
                 document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
@@ -669,7 +684,6 @@
                             <div>
                                 <span class="badge rounded-pill bg-primary px-3 py-1">Plan #${item.record_id}</span>
                                 <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.user}</span>
-                                <span class="badge rounded-pill bg-info-subtle text-info border ms-1">${tx.travel_style || 'Standard'}</span>
                             </div>
                             <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
@@ -680,7 +694,7 @@
                             <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
                         </div>
                         <div id="details_${item.record_id}" class="expanded-details small text-secondary">
-                            <strong class="text-dark">Detailed Asset Distribution (${tx.risk_profile}):</strong>
+                            <strong class="text-dark">Detailed Asset Distribution:</strong>
                             <ul class="mb-0 mt-1 ps-3">${breakdownHtml}</ul>
                         </div>
                     </div>
