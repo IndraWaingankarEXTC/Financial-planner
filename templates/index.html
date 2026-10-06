@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Global Travel & Wealth Planner (₹ INR)</title>
+    <title>OmniVest | Live AI Wealth Planner (INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -17,7 +17,6 @@
             --accent-mint: #10b981;
             --accent-rose: #f43f5e;
             --text-dark: #0f172a;
-            --text-muted: #64748b;
             --card-radius: 24px;
             --button-radius: 16px;
         }
@@ -37,19 +36,15 @@
             box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
             transition: all 0.25s ease;
         }
-        .card-custom:hover {
-            box-shadow: 0 18px 32px -8px rgba(79, 70, 229, 0.14);
-        }
 
         .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
         .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
-        /* Currency Ticker */
         .market-ticker-bar {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-bottom: 2px solid #e2e8f0;
             font-size: 0.88rem;
             white-space: nowrap;
@@ -64,11 +59,20 @@
             padding: 5px 16px;
             margin: 4px 6px;
             font-weight: 700;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
+        .price-flash-up {
+            background: #dcfce7 !important;
+            transform: scale(1.04);
+        }
+        .price-flash-down {
+            background: #ffe4e6 !important;
+            transform: scale(1.04);
+        }
+
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
-        /* Buttons */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
@@ -94,16 +98,11 @@
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
         }
-        .btn-confirm-deal:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.45);
-            color: #fff;
-        }
 
         .form-control, .form-select {
-            border-radius: 16px;
+            border-radius: 14px;
             border: 2px solid #cbd5e1;
-            padding: 11px 16px;
+            padding: 10px 14px;
             font-weight: 600;
         }
         .form-control:focus, .form-select:focus {
@@ -111,7 +110,6 @@
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
-        /* MULTI-CURRENCY SPREAD ANIMATION */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -128,47 +126,27 @@
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
 
-        .currency-spread {
-            display: flex;
-            gap: 14px;
-            margin-bottom: 20px;
-        }
+        .currency-spread { display: flex; gap: 12px; margin-bottom: 20px; }
         .currency-badge {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: white;
+            width: 54px; height: 54px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; color: white;
             box-shadow: 0 8px 18px rgba(0,0,0,0.12);
             animation: floatCurrency 1.2s infinite alternate ease-in-out;
         }
-        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); animation-delay: 0s; }
+        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); }
         .curr-usd { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation-delay: 0.15s; }
         .curr-eur { background: linear-gradient(135deg, #6366f1, #4338ca); animation-delay: 0.3s; }
         .curr-yen { background: linear-gradient(135deg, #ec4899, #be185d); animation-delay: 0.45s; }
         .curr-gbp { background: linear-gradient(135deg, #f59e0b, #d97706); animation-delay: 0.6s; }
-        .curr-thb { background: linear-gradient(135deg, #06b6d4, #0891b2); animation-delay: 0.75s; }
 
         @keyframes floatCurrency {
             0% { transform: translateY(0) scale(0.95); }
             100% { transform: translateY(-16px) scale(1.05); }
         }
 
-        .nav-pills {
-            background: #eef2ff;
-            padding: 6px;
-            border-radius: 20px;
-        }
-        .nav-pills .nav-link {
-            border-radius: 16px;
-            font-weight: 700;
-            color: #64748b;
-            padding: 10px 18px;
-        }
+        .nav-pills { background: #eef2ff; padding: 6px; border-radius: 20px; }
+        .nav-pills .nav-link { border-radius: 16px; font-weight: 700; color: #64748b; padding: 10px 18px; }
         .nav-pills .nav-link.active {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: #fff !important;
@@ -176,28 +154,16 @@
         }
 
         .portfolio-bubble {
-            border: 2px solid #e2e8f0;
-            border-radius: 20px;
-            background: #ffffff;
-            cursor: pointer;
+            border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
             transition: all 0.2s ease;
         }
-        .portfolio-bubble:hover {
-            border-color: #8b5cf6;
-            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.1);
-        }
         .expanded-details {
-            background: #f8fafc;
-            border-top: 1px dashed #cbd5e1;
-            padding: 12px;
-            margin-top: 10px;
-            display: none;
+            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 12px; margin-top: 10px; display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- MULTI-CURRENCY LOADING SPREAD -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -205,32 +171,30 @@
             <div class="currency-badge curr-eur">€</div>
             <div class="currency-badge curr-yen">¥</div>
             <div class="currency-badge curr-gbp">£</div>
-            <div class="currency-badge curr-thb">฿</div>
         </div>
-        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Global Travel Costs...</h4>
-        <p class="text-muted small fw-semibold">Consulting AI for destination living indices & compound yields (₹ INR)...</p>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Live Markets...</h4>
+        <p class="text-muted small fw-semibold">Consulting Gemini AI to derive optimal asset allocations...</p>
     </div>
 
-    <!-- Live Market Strip -->
+    <!-- Live Ticker Bar -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
-            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live Indian & Global indices...
+            <i class="fa-solid fa-circle text-success fa-fade me-2" style="font-size: 0.75rem;"></i> Connecting to market feeds...
         </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
-                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">₹ INR</span>
-                OmniVest <span class="text-muted ms-2 fs-6 fw-semibold">Wealth & Goal Planner</span>
+                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">INR</span>
+                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Travel Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
     </nav>
 
     <div class="container pb-5">
-        <!-- Login Screen (Always Mandatory) -->
+        <!-- Auth View -->
         <div id="authView" class="row justify-content-center my-4">
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
@@ -239,10 +203,9 @@
                             <span class="badge bg-success-subtle text-success border fs-5">₹</span>
                             <span class="badge bg-primary-subtle text-primary border fs-5">$</span>
                             <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
-                            <span class="badge bg-danger-subtle text-danger border fs-5">¥</span>
                         </div>
                         <h4 class="fw-bold">Sign In to OmniVest</h4>
-                        <p class="text-muted small">Access your multi-asset investment records.</p>
+                        <p class="text-muted small">Select your portal to proceed.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
@@ -259,7 +222,6 @@
                     </ul>
 
                     <div class="tab-content" id="loginTabContent">
-                        <!-- Customer Pane -->
                         <div class="tab-pane fade show active" id="customerPane" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-dark">Your Name</label>
@@ -270,11 +232,10 @@
                                 <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
                             </div>
                             <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
-                                Enter Planner (₹ INR)
+                                Enter Planner (INR)
                             </button>
                         </div>
 
-                        <!-- Admin Pane -->
                         <div class="tab-pane fade" id="adminPane" role="tabpanel">
                             <div class="p-3 rounded-3 bg-light border mb-3 small">
                                 <strong class="text-primary">Admin Access:</strong><br>
@@ -302,47 +263,81 @@
 
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
-            <!-- Stat Bar in INR -->
+            <!-- Summary Stats -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-1 p-3 text-center">
-                        <small class="text-primary fw-bold">Active Plans</small>
+                        <small class="text-primary fw-bold" id="statPortfoliosLabel">Active Plans</small>
                         <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-2 p-3 text-center">
-                        <small class="text-success fw-bold">Invested Principal</small>
+                        <small class="text-success fw-bold" id="statPrincipalLabel">Invested Principal</small>
                         <div class="fs-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-3 p-3 text-center">
-                        <small class="text-warning-emphasis fw-bold">Projected Profit</small>
+                        <small class="text-warning-emphasis fw-bold" id="statGainLabel">Projected Profit</small>
                         <div class="fs-3 fw-extrabold text-dark mt-1" id="statGain">+₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-4 p-3 text-center">
-                        <small class="text-danger fw-bold">Final Target Corpus</small>
+                        <small class="text-danger fw-bold" id="statMaturityLabel">Final Corpus</small>
                         <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Planner Form & Allocation -->
-            <div class="row g-4 mb-4">
+            <!-- ADMIN NOTICE BANNER (Only displayed for Admin) -->
+            <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Administrative Oversight Mode</h6>
+                        <span class="small text-secondary">
+                            You are reviewing all investor portfolios submitted across the platform. Investment planning tools are disabled for supervisory accounts.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMER-ONLY PLANNER SECTION (Completely hidden for Admin) -->
+            <div id="customerPlannerSection" class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-dark">Plan Your Target (₹)</h5>
+                        <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Select Strategy Mode</label>
+                            <label class="form-label small fw-bold text-muted">Strategy Mode</label>
                             <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
-                                <option value="goal">Goal & Trip Duration (e.g. Nepal for 7 days vs Netherlands)</option>
+                                <option value="goal">Goal & Trip Destination</option>
                                 <option value="budget">Monthly Savings Willingness (₹)</option>
                                 <option value="corpus">Exact Target Corpus Amount (₹)</option>
                             </select>
+                        </div>
+
+                        <div class="mb-3" id="travelStyleContainer">
+                            <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
+                            <select id="travelStyleInput" class="form-select border-primary-subtle">
+                                <option value="budget">Budget / Backpacker (Hostels, regional transport, local meals)</option>
+                                <option value="mid" selected>Mid-Range Standard (3-4 star stays, city transit, guided tours)</option>
+                                <option value="luxury">Luxury / Premium (5-star hotels, private transfers, fine dining)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
+                            <select id="riskTierInput" class="form-select border-info-subtle">
+                                <option value="low">Low Risk (Capital Preservation: Debt, FDs, Gold, large-cap index)</option>
+                                <option value="mid" selected>Mid Risk (Balanced Growth: Index equities, mutual funds, diversified assets)</option>
+                                <option value="high">High Risk (Aggressive Compounding: High equity exposure and digital assets)</option>
+                            </select>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                                Gemini AI dynamically calculates asset weights based on duration and market trends.
+                            </small>
                         </div>
 
                         <div class="mb-3" id="inputContainer">
@@ -356,30 +351,34 @@
                         </div>
 
                         <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
-                            Calculate Plan (₹ INR)
+                            Generate AI Market Plan (INR)
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
                     <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-dark">Optimal Asset Allocation (₹)</h5>
+                        <h5 class="fw-bold mb-3 text-dark">AI-Derived Portfolio Allocation</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
                             <div class="d-inline-flex gap-2 mb-3">
                                 <span class="badge bg-light text-dark border p-2 fs-4">₹</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
-                                <span class="badge bg-light text-dark border p-2 fs-4">¥</span>
+                                <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Enter any destination worldwide or budget on the left and tap <strong>Calculate Plan</strong>.</p>
+                            <p>Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Optimal Yield</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">AI Strategy</span>
                             </div>
-                            <p class="small text-muted mb-3" id="resRationale"></p>
+                            <div class="mb-2">
+                                <span class="badge bg-light text-dark border me-1" id="styleBadge">Comfort: Standard</span>
+                                <span class="badge bg-info-subtle text-info border" id="tenureBadge">3 Years</span>
+                            </div>
+                            <div class="p-3 bg-light rounded-3 border mb-3 small" id="resRationale"></div>
 
                             <div class="row g-2 text-center mb-3">
                                 <div class="col-6">
@@ -401,9 +400,9 @@
                                     <thead>
                                         <tr class="text-muted">
                                             <th>Asset Class</th>
-                                            <th>Share</th>
+                                            <th>AI Determined Share</th>
                                             <th>Principal (₹)</th>
-                                            <th>Est. Return (₹)</th>
+                                            <th>Projected Return (₹)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="allotmentTableBody"></tbody>
@@ -411,21 +410,21 @@
                             </div>
 
                             <button id="btnCommit" class="btn btn-confirm-deal w-100 py-3 fw-bold" onclick="openTncModal()">
-                                <i class="fa-solid fa-check-circle me-2"></i> Fix & Confirm Investment Deal (₹)
+                                <i class="fa-solid fa-check-circle me-2"></i> Fix & Confirm Investment Deal (INR)
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ledger Records -->
+            <!-- Ledger Records (Accessible to Both; Admin sees all users) -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
                         <i class="fa-solid fa-folder-closed text-primary me-2"></i> <span id="ledgerTitleText">My Saved Portfolios</span>
                     </h5>
                     <a href="/api/export-csv" class="btn btn-sm btn-outline-success rounded-pill px-3 py-2 fw-bold" id="csvDownloadBtn">
-                        <i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement (₹)
+                        <i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement (INR)
                     </a>
                 </div>
                 <div id="ledgerContainer" class="d-flex flex-column gap-3"></div>
@@ -433,27 +432,26 @@
         </div>
     </div>
 
-    <!-- MANDATORY TERMS & CONDITIONS MODAL -->
+    <!-- T&C Modal -->
     <div class="modal fade" id="tncModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3 rounded-4">
                 <div class="modal-header border-bottom">
                     <h5 class="modal-title fw-bold text-danger">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Investment Terms & Disclosures
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Investment Disclosures
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body py-3">
                     <p class="small text-muted mb-2">Please acknowledge the disclosures before fixing your deal:</p>
                     <ol class="small text-secondary ps-3 mb-3">
-                        <li class="mb-2"><strong>Market Volatility:</strong> Asset compounding rates fluctuate based on market movements.</li>
-                        <li class="mb-2"><strong>Fixed Duration:</strong> Portfolios are optimized for the complete target tenure.</li>
-                        <li class="mb-2"><strong>Indian Rupee Calibration:</strong> All values are calculated in INR based on prevailing exchange rates and inflation.</li>
+                        <li class="mb-2"><strong>AI Allocations:</strong> Portfolio weights are dynamically recommended by Gemini LLM based on live market metrics.</li>
+                        <li class="mb-2"><strong>Market Fluctuations:</strong> Compounded returns are projections and subject to actual market volatility.</li>
                     </ol>
                     <div class="form-check p-3 bg-light rounded-3 border">
                         <input class="form-check-input ms-0 me-2" type="checkbox" id="agreeTncCheck" onchange="toggleTncButton()">
                         <label class="form-check-label small fw-bold text-dark" for="agreeTncCheck">
-                            I have read, understood, and accept all investment terms and disclosures.
+                            I accept the AI-recommended strategy and investment terms.
                         </label>
                     </div>
                 </div>
@@ -470,6 +468,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let activePlan = null;
+        let lastPrices = {};
+        let currentUserIsAdmin = false;
 
         function showLoading(msg = "Crunching numbers...") {
             document.getElementById('loadingText').innerText = msg;
@@ -483,12 +483,23 @@
             try {
                 const res = await fetch('/api/market-prices');
                 const { market } = await res.json();
-                let html = '<div class="container d-flex flex-wrap justify-content-center">';
+                const container = document.getElementById('marketTickerContainer');
+                
+                let html = '<div class="container d-flex flex-wrap justify-content-center align-items-center">';
+                html += '<span class="badge bg-success-subtle text-success border me-2"><i class="fa-solid fa-circle fa-fade me-1"></i> LIVE</span>';
+
                 for (const [key, data] of Object.entries(market)) {
                     const cls = data.status === 'up' ? 'text-up' : 'text-down';
                     const icon = data.status === 'up' ? '▲' : '▼';
+                    
+                    let flashClass = '';
+                    if (lastPrices[key] !== undefined && lastPrices[key] !== data.price) {
+                        flashClass = (data.price > lastPrices[key]) ? 'price-flash-up' : 'price-flash-down';
+                    }
+                    lastPrices[key] = data.price;
+
                     html += `
-                        <div class="ticker-pill">
+                        <div class="ticker-pill ${flashClass}" id="ticker_${key.replace(/[^a-zA-Z0-9]/g, '')}">
                             <span class="me-2 text-secondary">${key}:</span>
                             <span class="text-dark me-2">₹${data.price.toLocaleString('en-IN')}</span>
                             <span class="${cls}">${icon} ${data.change}%</span>
@@ -496,26 +507,39 @@
                     `;
                 }
                 html += '</div>';
-                document.getElementById('marketTickerContainer').innerHTML = html;
-            } catch (e) { console.error(e); }
+                container.innerHTML = html;
+
+                setTimeout(() => {
+                    document.querySelectorAll('.ticker-pill').forEach(el => {
+                        el.classList.remove('price-flash-up', 'price-flash-down');
+                    });
+                }, 1000);
+
+            } catch (e) { console.error("Ticker fetch error:", e); }
         }
-        setInterval(fetchMarketTicker, 15000);
+
+        setInterval(fetchMarketTicker, 8000);
         fetchMarketTicker();
 
         function toggleModeInputs() {
             const mode = document.getElementById('planningMode').value;
             const container = document.getElementById('inputContainer');
+            const styleContainer = document.getElementById('travelStyleContainer');
+
             if (mode === 'goal') {
+                styleContainer.style.display = 'block';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Destination & Duration</label>
                     <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
+                styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
                     <input type="number" id="statementInput" class="form-control" value="10000">
                 `;
             } else {
+                styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
                     <input type="number" id="statementInput" class="form-control" value="500000">
@@ -542,16 +566,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('authView').style.display = 'none';
-                    document.getElementById('dashboardView').style.display = 'block';
-                    document.getElementById('navUserArea').innerHTML = `
-                        <div class="d-flex align-items-center">
-                            <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
-                                ${data.username} ${data.is_admin ? '(Admin)' : ''}
-                            </span>
-                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
-                        </div>
-                    `;
+                    currentUserIsAdmin = !!data.is_admin;
+                    applyUserInterface(data.username, currentUserIsAdmin);
                     loadLedger();
                 } else {
                     document.getElementById('authError').innerText = data.message;
@@ -562,17 +578,63 @@
             }
         }
 
+        function applyUserInterface(username, isAdmin) {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+
+            if (isAdmin) {
+                // Hide planner and options entirely for Admin
+                document.getElementById('customerPlannerSection').classList.add('d-none');
+                document.getElementById('adminNoticeBanner').classList.remove('d-none');
+                
+                document.getElementById('navRoleBadge').innerText = "Supervisory Audit Console";
+                document.getElementById('statPortfoliosLabel').innerText = "Total User Plans";
+                document.getElementById('statPrincipalLabel').innerText = "Total Platform Principal";
+                document.getElementById('statGainLabel').innerText = "Total Platform Gain";
+                document.getElementById('statMaturityLabel').innerText = "Total Portfolio Value";
+                
+                document.getElementById('ledgerTitleText').innerText = "Platform-Wide User Portfolios";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (INR)`;
+            } else {
+                // Show planner for Customer
+                document.getElementById('customerPlannerSection').classList.remove('d-none');
+                document.getElementById('adminNoticeBanner').classList.add('d-none');
+                
+                document.getElementById('navRoleBadge').innerText = "Wealth & Travel Planner";
+                document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
+                document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
+                document.getElementById('statGainLabel').innerText = "Projected Profit";
+                document.getElementById('statMaturityLabel').innerText = "Final Corpus";
+                
+                document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download My CSV (INR)`;
+            }
+
+            document.getElementById('navUserArea').innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
+                        ${username} ${isAdmin ? '(Admin)' : ''}
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
+                </div>
+            `;
+        }
+
         async function logout() {
             await fetch('/api/logout', { method: 'POST' });
             location.reload();
         }
 
         async function computeAiPlan() {
+            if (currentUserIsAdmin) return;
+
             const mode = document.getElementById('planningMode').value;
             const years = document.getElementById('yearsInput').value;
             const rawVal = document.getElementById('statementInput').value;
+            const travel_style = document.getElementById('travelStyleInput').value;
+            const risk_tier = document.getElementById('riskTierInput').value;
 
-            showLoading("Consulting AI for destination costs & growth rates (₹)...");
+            showLoading("Gemini AI is analyzing duration and market data...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -580,7 +642,7 @@
                 const res = await fetch('/api/analyze', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({mode, years, statement, input_val}) 
+                    body: JSON.stringify({mode, years, statement, input_val, travel_style, risk_tier}) 
                 });
                 const { data } = await res.json();
                 activePlan = data;
@@ -589,7 +651,9 @@
                 document.getElementById('aiReady').style.display = 'block';
                 document.getElementById('resGoal').innerText = data.goal_identified;
                 document.getElementById('riskBadge').innerText = data.risk_profile;
-                document.getElementById('resRationale').innerText = data.ai_rationale;
+                document.getElementById('styleBadge').innerText = `Style: ${data.travel_style}`;
+                document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years (${data.expected_rate_annual} CAGR)`;
+                document.getElementById('resRationale').innerHTML = `<strong>AI Market Rationale:</strong> ${data.ai_rationale}`;
                 document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
                 document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
 
@@ -599,9 +663,9 @@
                     tbody.innerHTML += `
                         <tr>
                             <td><strong>${k.replace(/_/g, ' ')}</strong></td>
-                            <td><span class="badge bg-secondary-subtle text-dark">${v.pct}%</span></td>
+                            <td><span class="badge bg-primary-subtle text-primary border px-2 py-1">${v.pct}%</span></td>
                             <td class="text-primary fw-bold">₹${v.amount.toLocaleString('en-IN')}</td>
-                            <td class="text-success fw-bold">₹${v.projected_return.toLocaleString('en-IN')} <small class="text-muted">(${v.cagr})</small></td>
+                            <td class="text-success fw-bold">₹${v.projected_return.toLocaleString('en-IN')}</td>
                         </tr>
                     `;
                 }
@@ -611,7 +675,7 @@
         }
 
         function openTncModal() {
-            if (!activePlan) return;
+            if (!activePlan || currentUserIsAdmin) return;
             document.getElementById('agreeTncCheck').checked = false;
             document.getElementById('confirmDealModalBtn').disabled = true;
             const modal = new bootstrap.Modal(document.getElementById('tncModal'));
@@ -624,7 +688,7 @@
         }
 
         async function executeConfirmedDeal() {
-            if (!activePlan) return;
+            if (!activePlan || currentUserIsAdmin) return;
             
             const modalEl = document.getElementById('tncModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
@@ -651,17 +715,6 @@
         }
 
         async function loadLedger() {
-            const sessionRes = await fetch('/api/current-session');
-            const sessionData = await sessionRes.json();
-            
-            if (sessionData.is_admin) {
-                document.getElementById('ledgerTitleText').innerText = "GLOBAL AUDIT VAULT (All Users)";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (₹)`;
-            } else {
-                document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download My CSV (₹)`;
-            }
-
             const res = await fetch('/api/my-ledger');
             const data = await res.json();
             document.getElementById('statPortfolios').innerText = data.summary.active_portfolios;
@@ -671,6 +724,12 @@
 
             const container = document.getElementById('ledgerContainer');
             container.innerHTML = '';
+
+            if (!data.records || data.records.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 text-muted">No investor portfolios recorded yet.</div>`;
+                return;
+            }
+
             data.records.forEach(item => {
                 const tx = item.tx;
                 let breakdownHtml = '';
@@ -683,7 +742,9 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
                                 <span class="badge rounded-pill bg-primary px-3 py-1">Plan #${item.record_id}</span>
-                                <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.user}</span>
+                                <span class="badge rounded-pill bg-dark text-white border ms-1">Investor: ${tx.user}</span>
+                                <span class="badge rounded-pill bg-info-subtle text-info border ms-1">${tx.travel_style || 'Standard'}</span>
+                                <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.duration_days || 7} Days</span>
                             </div>
                             <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
@@ -694,7 +755,7 @@
                             <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
                         </div>
                         <div id="details_${item.record_id}" class="expanded-details small text-secondary">
-                            <strong class="text-dark">Detailed Asset Distribution:</strong>
+                            <strong class="text-dark">Investor Risk Profile & Allocation (${tx.risk_profile}):</strong>
                             <ul class="mb-0 mt-1 ps-3">${breakdownHtml}</ul>
                         </div>
                     </div>
