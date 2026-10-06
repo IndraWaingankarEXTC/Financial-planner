@@ -3,27 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Fun & Colorful Wealth Planner 🎈</title>
+    <title>OmniVest | Global Travel & Wealth Planner (₹ INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-canvas: #f8faff;
             --surface-card: #ffffff;
-            --primary-indigo: #6366f1;
+            --primary-indigo: #4f46e5;
             --accent-mint: #10b981;
-            --accent-mango: #f59e0b;
-            --accent-pink: #ec4899;
-            --accent-cyan: #06b6d4;
-            --accent-purple: #8b5cf6;
-            --text-dark: #1e293b;
+            --accent-rose: #f43f5e;
+            --text-dark: #0f172a;
             --text-muted: #64748b;
-            --card-radius: 26px;
-            --button-radius: 20px;
+            --card-radius: 24px;
+            --button-radius: 16px;
         }
 
         body {
@@ -34,30 +30,28 @@
             overflow-x: hidden;
         }
 
-        /* Colorful Custom Cards */
         .card-custom {
             background: var(--surface-card);
-            border: 3px solid #e0e7ff;
+            border: 2px solid #e0e7ff;
             border-radius: var(--card-radius);
-            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.12);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+            box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
+            transition: all 0.25s ease;
         }
         .card-custom:hover {
-            box-shadow: 0 22px 35px -8px rgba(99, 102, 241, 0.18);
+            box-shadow: 0 18px 32px -8px rgba(79, 70, 229, 0.14);
         }
 
-        /* Gradient Stat Boxes */
         .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
         .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
-        /* Market Ticker Bar */
+        /* Currency Ticker */
         .market-ticker-bar {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 2px dashed #cbd5e1;
-            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.88rem;
             white-space: nowrap;
             overflow-x: auto;
         }
@@ -70,63 +64,58 @@
             padding: 5px 16px;
             margin: 4px 6px;
             font-weight: 700;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
         }
         .text-up { color: var(--accent-mint); font-weight: 800; }
-        .text-down { color: var(--accent-pink); font-weight: 800; }
+        .text-down { color: var(--accent-rose); font-weight: 800; }
 
-        /* Rainbow & Pastel Buttons */
+        /* Buttons */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
-            font-weight: 800;
+            font-weight: 700;
             border-radius: var(--button-radius);
             border: none;
-            padding: 14px 22px;
-            box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.45);
-            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 12px 20px;
+            box-shadow: 0 6px 18px -3px rgba(139, 92, 246, 0.4);
+            transition: all 0.2s ease;
         }
         .btn-brand:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 14px 24px -4px rgba(139, 92, 246, 0.55);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px -3px rgba(139, 92, 246, 0.5);
             color: #fff;
         }
 
         .btn-confirm-deal {
             background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             color: #fff;
-            font-weight: 800;
+            font-weight: 700;
             border-radius: var(--button-radius);
             border: none;
-            box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.45);
-            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
+            transition: all 0.2s ease;
         }
         .btn-confirm-deal:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 14px 26px -4px rgba(16, 185, 129, 0.55);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.45);
             color: #fff;
         }
 
-        /* Form Inputs */
         .form-control, .form-select {
-            border-radius: 18px;
+            border-radius: 16px;
             border: 2px solid #cbd5e1;
-            padding: 12px 18px;
+            padding: 11px 16px;
             font-weight: 600;
-            background-color: #fdfdfd;
-            transition: all 0.2s;
         }
         .form-control:focus, .form-select:focus {
             border-color: #8b5cf6;
-            background-color: #fff;
-            box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
-        /* Loading Screen Animation */
+        /* MULTI-CURRENCY SPREAD ANIMATION */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
@@ -135,133 +124,160 @@
             align-items: center;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
-        .bouncing-piggy {
-            font-size: 4rem;
-            animation: bounce 0.7s infinite alternate ease-in-out;
+
+        .currency-spread {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 20px;
         }
-        @keyframes bounce {
-            from { transform: translateY(0) scale(1); }
-            to { transform: translateY(-22px) scale(1.05); }
+        .currency-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+            animation: floatCurrency 1.2s infinite alternate ease-in-out;
+        }
+        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); animation-delay: 0s; }
+        .curr-usd { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation-delay: 0.15s; }
+        .curr-eur { background: linear-gradient(135deg, #6366f1, #4338ca); animation-delay: 0.3s; }
+        .curr-yen { background: linear-gradient(135deg, #ec4899, #be185d); animation-delay: 0.45s; }
+        .curr-gbp { background: linear-gradient(135deg, #f59e0b, #d97706); animation-delay: 0.6s; }
+        .curr-thb { background: linear-gradient(135deg, #06b6d4, #0891b2); animation-delay: 0.75s; }
+
+        @keyframes floatCurrency {
+            0% { transform: translateY(0) scale(0.95); }
+            100% { transform: translateY(-16px) scale(1.05); }
         }
 
-        /* Pill Tabs */
         .nav-pills {
             background: #eef2ff;
             padding: 6px;
-            border-radius: 22px;
+            border-radius: 20px;
         }
         .nav-pills .nav-link {
-            border-radius: 18px;
+            border-radius: 16px;
             font-weight: 700;
             color: #64748b;
-            padding: 10px 20px;
-            transition: all 0.2s;
+            padding: 10px 18px;
         }
         .nav-pills .nav-link.active {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: #fff !important;
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
 
-        /* Portfolio Cards */
         .portfolio-bubble {
             border: 2px solid #e2e8f0;
-            border-radius: 22px;
+            border-radius: 20px;
             background: #ffffff;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
         .portfolio-bubble:hover {
             border-color: #8b5cf6;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -4px rgba(139, 92, 246, 0.15);
+            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.1);
         }
         .expanded-details {
-            background: #f8faff;
-            border: 2px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 14px;
-            margin-top: 12px;
+            background: #f8fafc;
+            border-top: 1px dashed #cbd5e1;
+            padding: 12px;
+            margin-top: 10px;
             display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Playful Loading Screen -->
+    <!-- MULTI-CURRENCY LOADING SPREAD -->
     <div id="loadingOverlay">
-        <div class="bouncing-piggy mb-2">🐷</div>
-        <h3 class="fw-bolder text-dark" id="loadingText">Counting your future coins...</h3>
-        <p class="text-muted fw-bold">Optimizing growth & preparing your plan!</p>
+        <div class="currency-spread">
+            <div class="currency-badge curr-inr">₹</div>
+            <div class="currency-badge curr-usd">$</div>
+            <div class="currency-badge curr-eur">€</div>
+            <div class="currency-badge curr-yen">¥</div>
+            <div class="currency-badge curr-gbp">£</div>
+            <div class="currency-badge curr-thb">฿</div>
+        </div>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Global Travel Costs...</h4>
+        <p class="text-muted small fw-semibold">Consulting AI for destination living indices & compound yields (₹ INR)...</p>
     </div>
 
     <!-- Live Market Strip -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
-            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live markets...
+            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live Indian & Global indices...
         </div>
     </div>
 
-    <!-- Top Navigation -->
+    <!-- Navigation -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-extrabold fs-3 text-dark d-flex align-items-center">
-                <span class="p-2 rounded-4 bg-white shadow-sm me-2 border">🚀</span> 
-                <span style="background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">OmniVest</span>
-                <span class="badge rounded-pill bg-warning text-dark ms-2 fs-6 shadow-sm">Super Fun ✨</span>
+            <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
+                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">₹ INR</span>
+                OmniVest <span class="text-muted ms-2 fs-6 fw-semibold">Wealth & Goal Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
     </nav>
 
     <div class="container pb-5">
-        <!-- Dual Login View -->
+        <!-- Login Screen (Always Mandatory) -->
         <div id="authView" class="row justify-content-center my-4">
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <div class="display-5 mb-2">🎉</div>
-                        <h3 class="fw-bold">Welcome Friend!</h3>
-                        <p class="text-muted small fw-semibold">Sign in to start planning your next big journey!</p>
+                        <div class="d-inline-flex gap-2 mb-2">
+                            <span class="badge bg-success-subtle text-success border fs-5">₹</span>
+                            <span class="badge bg-primary-subtle text-primary border fs-5">$</span>
+                            <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
+                            <span class="badge bg-danger-subtle text-danger border fs-5">¥</span>
+                        </div>
+                        <h4 class="fw-bold">Sign In to OmniVest</h4>
+                        <p class="text-muted small">Access your multi-asset investment records.</p>
                     </div>
 
-                    <!-- Cleaned Navigation Tabs -->
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button" role="tab" aria-controls="customerPane" aria-selected="true">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button" role="tab" aria-selected="true">
                                 <i class="fa-solid fa-user me-1"></i> Customer Login
                             </button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#adminPane" type="button" role="tab" aria-controls="adminPane" aria-selected="false">
-                                <i class="fa-solid fa-shield-cat me-1"></i> Admin Portal
+                        <li class="nav-item">
+                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#adminPane" type="button" role="tab" aria-selected="false">
+                                <i class="fa-solid fa-shield-halved me-1"></i> Admin Portal
                             </button>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="loginTabContent">
-                        <!-- Customer Pane (Strictly Default) -->
-                        <div class="tab-pane fade show active" id="customerPane" role="tabpanel" aria-labelledby="customer-tab">
+                        <!-- Customer Pane -->
+                        <div class="tab-pane fade show active" id="customerPane" role="tabpanel">
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-dark">👤 Your Full Name</label>
+                                <label class="form-label small fw-bold text-dark">Your Name</label>
                                 <input type="text" id="custName" class="form-control" placeholder="e.g. Maya Sharma">
                             </div>
                             <div class="mb-4">
-                                <label class="form-label small fw-bold text-dark">📱 Phone Number</label>
+                                <label class="form-label small fw-bold text-dark">Mobile Number</label>
                                 <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
                             </div>
                             <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
-                                Start My Adventure! 🌟
+                                Enter Planner (₹ INR)
                             </button>
                         </div>
 
                         <!-- Admin Pane -->
-                        <div class="tab-pane fade" id="adminPane" role="tabpanel" aria-labelledby="admin-tab">
-                            <div class="p-3 rounded-4 bg-light border border-2 border-primary-subtle mb-3 small">
-                                <strong class="text-primary">🔑 Admin Master Access:</strong><br>
+                        <div class="tab-pane fade" id="adminPane" role="tabpanel">
+                            <div class="p-3 rounded-3 bg-light border mb-3 small">
+                                <strong class="text-primary">Admin Access:</strong><br>
                                 Username: <code>admin</code><br>
                                 Passkey: <code>0000000000</code>
                             </div>
@@ -270,70 +286,68 @@
                                 <input type="text" id="adminName" class="form-control" value="admin">
                             </div>
                             <div class="mb-4">
-                                <label class="form-label small fw-bold text-dark">Admin Passkey</label>
+                                <label class="form-label small fw-bold text-dark">Passkey</label>
                                 <input type="text" id="adminPhone" class="form-control" value="0000000000">
                             </div>
-                            <button class="btn btn-dark w-100 py-3 rounded-4 fw-bold shadow" onclick="handleLogin('admin')">
-                                Open Master Vault 🔐
+                            <button class="btn btn-dark w-100 py-3 rounded-3 fw-bold" onclick="handleLogin('admin')">
+                                Open Admin Console
                             </button>
                         </div>
                     </div>
 
-                    <div id="authError" class="alert alert-danger mt-3 py-2 small rounded-4 fw-bold" style="display:none;"></div>
+                    <div id="authError" class="alert alert-danger mt-3 py-2 small rounded-3 fw-bold" style="display:none;"></div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
-            <!-- Colorful Stat Bubbles -->
+            <!-- Stat Bar in INR -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-1 p-3 text-center">
-                        <small class="text-primary fw-bold">🎯 Active Plans</small>
-                        <div class="fs-2 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
+                        <small class="text-primary fw-bold">Active Plans</small>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-2 p-3 text-center">
-                        <small class="text-success fw-bold">💰 Total Invested</small>
-                        <div class="fs-2 fw-extrabold text-success mt-1" id="statPrincipal">$0</div>
+                        <small class="text-success fw-bold">Invested Principal</small>
+                        <div class="fs-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-3 p-3 text-center">
-                        <small class="text-warning-emphasis fw-bold">📈 Total Profit</small>
-                        <div class="fs-2 fw-extrabold text-dark mt-1" id="statGain">+$0</div>
+                        <small class="text-warning-emphasis fw-bold">Projected Profit</small>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statGain">+₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-4 p-3 text-center">
-                        <small class="text-danger fw-bold">🏆 Target Corpus</small>
-                        <div class="fs-2 fw-extrabold text-danger mt-1" id="statMaturity">$0</div>
+                        <small class="text-danger fw-bold">Final Target Corpus</small>
+                        <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Planner & Breakdown -->
+            <!-- Planner Form & Allocation -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-5">
-                    <div class="card-custom p-4 h-100" style="background: linear-gradient(180deg, #ffffff 0%, #fdf4ff 100%);">
-                        <h4 class="fw-bold mb-3 d-flex align-items-center text-dark">
-                            <span class="me-2">🎨</span> Craft Your Goal
-                        </h4>
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="fw-bold mb-3 text-dark">Plan Your Target (₹)</h5>
 
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Select Strategy Mode</label>
-                            <select id="planningMode" class="form-select border-2" onchange="toggleModeInputs()">
-                                <option value="goal">Dream Goal & Trip Duration (e.g. Italy for 10 days)</option>
-                                <option value="budget">Monthly Willingness to Save</option>
-                                <option value="corpus">Fixed Payout Target Amount</option>
+                            <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
+                                <option value="goal">Goal & Trip Duration (e.g. Nepal for 7 days vs Netherlands)</option>
+                                <option value="budget">Monthly Savings Willingness (₹)</option>
+                                <option value="corpus">Exact Target Corpus Amount (₹)</option>
                             </select>
                         </div>
 
                         <div class="mb-3" id="inputContainer">
-                            <label class="form-label small fw-bold text-muted">Destination & Stay Length</label>
-                            <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Italy for 10 days in 3 years.</textarea>
+                            <label class="form-label small fw-bold text-muted">Destination & Duration</label>
+                            <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
                         </div>
 
                         <div class="mb-4">
@@ -342,39 +356,41 @@
                         </div>
 
                         <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
-                            Calculate Maximum Returns ✨
+                            Calculate Plan (₹ INR)
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
-                    <div class="card-custom p-4 h-100" style="background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);">
-                        <h4 class="fw-bold mb-3 d-flex align-items-center text-dark">
-                            <span class="me-2">📊</span> Optimal Asset Split
-                        </h4>
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="fw-bold mb-3 text-dark">Optimal Asset Allocation (₹)</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
-                            <div class="display-6 mb-2">💡</div>
-                            <p class="fw-semibold">Pick a destination or target on the left and tap <strong>Calculate</strong> to watch your money grow!</p>
+                            <div class="d-inline-flex gap-2 mb-3">
+                                <span class="badge bg-light text-dark border p-2 fs-4">₹</span>
+                                <span class="badge bg-light text-dark border p-2 fs-4">$</span>
+                                <span class="badge bg-light text-dark border p-2 fs-4">¥</span>
+                            </div>
+                            <p>Enter any destination worldwide or budget on the left and tap <strong>Calculate Plan</strong>.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success text-white px-3 py-2 fs-6">High Yield ⚡</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Optimal Yield</span>
                             </div>
                             <p class="small text-muted mb-3" id="resRationale"></p>
 
                             <div class="row g-2 text-center mb-3">
                                 <div class="col-6">
-                                    <div class="p-3 rounded-4 bg-white border border-2 border-primary-subtle shadow-sm">
+                                    <div class="p-3 rounded-3 bg-light border">
                                         <small class="text-muted fw-bold">Required Monthly SIP</small>
                                         <div class="fs-4 fw-extrabold text-primary" id="resMonthlySip">--</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 rounded-4 bg-white border border-2 border-success-subtle shadow-sm">
-                                        <small class="text-muted fw-bold">Target Final Pot</small>
+                                    <div class="p-3 rounded-3 bg-light border">
+                                        <small class="text-muted fw-bold">Target Final Corpus</small>
                                         <div class="fs-4 fw-extrabold text-success" id="resTargetCorpus">--</div>
                                     </div>
                                 </div>
@@ -384,18 +400,18 @@
                                 <table class="table table-sm align-middle" style="font-size: 0.9rem;">
                                     <thead>
                                         <tr class="text-muted">
-                                            <th>Bucket</th>
+                                            <th>Asset Class</th>
                                             <th>Share</th>
-                                            <th>Principal</th>
-                                            <th>Est. Return</th>
+                                            <th>Principal (₹)</th>
+                                            <th>Est. Return (₹)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="allotmentTableBody"></tbody>
                                 </table>
                             </div>
 
-                            <button id="btnCommit" class="btn btn-confirm-deal w-100 py-3 fw-bold fs-6" onclick="commitDeal()">
-                                <i class="fa-solid fa-circle-check me-2"></i> Confirm & Fix Investment Deal!
+                            <button id="btnCommit" class="btn btn-confirm-deal w-100 py-3 fw-bold" onclick="openTncModal()">
+                                <i class="fa-solid fa-check-circle me-2"></i> Fix & Confirm Investment Deal (₹)
                             </button>
                         </div>
                     </div>
@@ -405,14 +421,48 @@
             <!-- Ledger Records -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                    <h4 class="fw-bold mb-0 d-flex align-items-center text-dark">
-                        <span class="me-2">🗂️</span> <span id="ledgerTitleText">My Saved Portfolios</span>
-                    </h4>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fa-solid fa-folder-closed text-primary me-2"></i> <span id="ledgerTitleText">My Saved Portfolios</span>
+                    </h5>
                     <a href="/api/export-csv" class="btn btn-sm btn-outline-success rounded-pill px-3 py-2 fw-bold" id="csvDownloadBtn">
-                        <i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement
+                        <i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement (₹)
                     </a>
                 </div>
                 <div id="ledgerContainer" class="d-flex flex-column gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANDATORY TERMS & CONDITIONS MODAL -->
+    <div class="modal fade" id="tncModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3 rounded-4">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-danger">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Investment Terms & Disclosures
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-2">Please acknowledge the disclosures before fixing your deal:</p>
+                    <ol class="small text-secondary ps-3 mb-3">
+                        <li class="mb-2"><strong>Market Volatility:</strong> Asset compounding rates fluctuate based on market movements.</li>
+                        <li class="mb-2"><strong>Fixed Duration:</strong> Portfolios are optimized for the complete target tenure.</li>
+                        <li class="mb-2"><strong>Indian Rupee Calibration:</strong> All values are calculated in INR based on prevailing exchange rates and inflation.</li>
+                    </ol>
+                    <div class="form-check p-3 bg-light rounded-3 border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" id="agreeTncCheck" onchange="toggleTncButton()">
+                        <label class="form-check-label small fw-bold text-dark" for="agreeTncCheck">
+                            I have read, understood, and accept all investment terms and disclosures.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success btn-sm rounded-3 fw-bold px-3" id="confirmDealModalBtn" disabled onclick="executeConfirmedDeal()">
+                        Confirm & Lock Deal
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -440,7 +490,7 @@
                     html += `
                         <div class="ticker-pill">
                             <span class="me-2 text-secondary">${key}:</span>
-                            <span class="text-dark me-2">$${data.price.toLocaleString()}</span>
+                            <span class="text-dark me-2">₹${data.price.toLocaleString('en-IN')}</span>
                             <span class="${cls}">${icon} ${data.change}%</span>
                         </div>
                     `;
@@ -457,18 +507,18 @@
             const container = document.getElementById('inputContainer');
             if (mode === 'goal') {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Destination & Stay Length</label>
-                    <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Italy for 10 days in 3 years.</textarea>
+                    <label class="form-label small fw-bold text-muted">Destination & Duration</label>
+                    <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Monthly Savings Willingness ($)</label>
-                    <input type="number" id="statementInput" class="form-control" value="1000">
+                    <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
+                    <input type="number" id="statementInput" class="form-control" value="10000">
                 `;
             } else {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Target Final Payout Goal ($)</label>
-                    <input type="number" id="statementInput" class="form-control" value="50000">
+                    <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
+                    <input type="number" id="statementInput" class="form-control" value="500000">
                 `;
             }
         }
@@ -483,7 +533,7 @@
                 phone = document.getElementById('custPhone').value.trim();
             }
 
-            showLoading("Signing you in... ✨");
+            showLoading("Signing in...");
             try {
                 const res = await fetch('/api/auth', {
                     method: 'POST',
@@ -492,7 +542,17 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    location.reload();
+                    document.getElementById('authView').style.display = 'none';
+                    document.getElementById('dashboardView').style.display = 'block';
+                    document.getElementById('navUserArea').innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
+                                ${data.username} ${data.is_admin ? '(Admin)' : ''}
+                            </span>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
+                        </div>
+                    `;
+                    loadLedger();
                 } else {
                     document.getElementById('authError').innerText = data.message;
                     document.getElementById('authError').style.display = 'block';
@@ -512,7 +572,7 @@
             const years = document.getElementById('yearsInput').value;
             const rawVal = document.getElementById('statementInput').value;
 
-            showLoading("Calculating your trip & compound growth... 🚀");
+            showLoading("Consulting AI for destination costs & growth rates (₹)...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -528,9 +588,10 @@
                 document.getElementById('aiEmpty').style.display = 'none';
                 document.getElementById('aiReady').style.display = 'block';
                 document.getElementById('resGoal').innerText = data.goal_identified;
+                document.getElementById('riskBadge').innerText = data.risk_profile;
                 document.getElementById('resRationale').innerText = data.ai_rationale;
-                document.getElementById('resMonthlySip').innerText = `$${data.monthly_allocation.toLocaleString()} / mo`;
-                document.getElementById('resTargetCorpus').innerText = `$${data.estimated_maturity_value.toLocaleString()}`;
+                document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
+                document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
 
                 const tbody = document.getElementById('allotmentTableBody');
                 tbody.innerHTML = '';
@@ -539,8 +600,8 @@
                         <tr>
                             <td><strong>${k.replace(/_/g, ' ')}</strong></td>
                             <td><span class="badge bg-secondary-subtle text-dark">${v.pct}%</span></td>
-                            <td class="text-primary fw-bold">$${v.amount.toLocaleString()}</td>
-                            <td class="text-success fw-bold">$${v.projected_return.toLocaleString()} <small class="text-muted">(${v.cagr})</small></td>
+                            <td class="text-primary fw-bold">₹${v.amount.toLocaleString('en-IN')}</td>
+                            <td class="text-success fw-bold">₹${v.projected_return.toLocaleString('en-IN')} <small class="text-muted">(${v.cagr})</small></td>
                         </tr>
                     `;
                 }
@@ -549,9 +610,27 @@
             }
         }
 
-        async function commitDeal() {
+        function openTncModal() {
             if (!activePlan) return;
-            showLoading("Locking your investment deal... 🎈");
+            document.getElementById('agreeTncCheck').checked = false;
+            document.getElementById('confirmDealModalBtn').disabled = true;
+            const modal = new bootstrap.Modal(document.getElementById('tncModal'));
+            modal.show();
+        }
+
+        function toggleTncButton() {
+            const checked = document.getElementById('agreeTncCheck').checked;
+            document.getElementById('confirmDealModalBtn').disabled = !checked;
+        }
+
+        async function executeConfirmedDeal() {
+            if (!activePlan) return;
+            
+            const modalEl = document.getElementById('tncModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+
+            showLoading("Locking your investment deal in INR (₹)...");
             try {
                 const res = await fetch('/api/execute-investment', { 
                     method: 'POST', 
@@ -577,18 +656,18 @@
             
             if (sessionData.is_admin) {
                 document.getElementById('ledgerTitleText').innerText = "GLOBAL AUDIT VAULT (All Users)";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV`;
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (₹)`;
             } else {
                 document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Personal CSV`;
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download My CSV (₹)`;
             }
 
             const res = await fetch('/api/my-ledger');
             const data = await res.json();
             document.getElementById('statPortfolios').innerText = data.summary.active_portfolios;
-            document.getElementById('statPrincipal').innerText = `$${data.summary.total_principal.toLocaleString()}`;
-            document.getElementById('statGain').innerText = `+$${data.summary.total_gain.toLocaleString()}`;
-            document.getElementById('statMaturity').innerText = `$${data.summary.total_projected.toLocaleString()}`;
+            document.getElementById('statPrincipal').innerText = `₹${data.summary.total_principal.toLocaleString('en-IN')}`;
+            document.getElementById('statGain').innerText = `+₹${data.summary.total_gain.toLocaleString('en-IN')}`;
+            document.getElementById('statMaturity').innerText = `₹${data.summary.total_projected.toLocaleString('en-IN')}`;
 
             const container = document.getElementById('ledgerContainer');
             container.innerHTML = '';
@@ -596,7 +675,7 @@
                 const tx = item.tx;
                 let breakdownHtml = '';
                 for (const [k, v] of Object.entries(tx.portfolio)) {
-                    breakdownHtml += `<li><strong>${k.replace(/_/g, ' ')}:</strong> ${v.pct}% ($${v.amount.toLocaleString()} | Est. Return: $${v.projected_return.toLocaleString()})</li>`;
+                    breakdownHtml += `<li><strong>${k.replace(/_/g, ' ')}:</strong> ${v.pct}% (₹${v.amount.toLocaleString('en-IN')} | Est. Return: ₹${v.projected_return.toLocaleString('en-IN')})</li>`;
                 }
 
                 container.innerHTML += `
@@ -608,14 +687,14 @@
                             </div>
                             <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
-                        <h5 class="text-dark fw-bold mb-2">${tx.goal}</h5>
+                        <h6 class="text-dark fw-bold mb-2">${tx.goal}</h6>
                         <div class="row text-center g-2 my-1">
-                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Monthly SIP</small><strong class="text-primary">$${tx.monthly_investment}/mo</strong></div></div>
-                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Target Payout</small><strong class="text-success">$${tx.target_fund}</strong></div></div>
+                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Monthly SIP</small><strong class="text-primary">₹${tx.monthly_investment.toLocaleString('en-IN')}/mo</strong></div></div>
+                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Target Payout</small><strong class="text-success">₹${tx.target_fund.toLocaleString('en-IN')}</strong></div></div>
                             <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
                         </div>
                         <div id="details_${item.record_id}" class="expanded-details small text-secondary">
-                            <strong class="text-dark">Detailed Asset Split:</strong>
+                            <strong class="text-dark">Detailed Asset Distribution:</strong>
                             <ul class="mb-0 mt-1 ps-3">${breakdownHtml}</ul>
                         </div>
                     </div>
@@ -623,22 +702,9 @@
             });
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            const res = await fetch('/api/current-session');
-            const data = await res.json();
-            if (data.user) {
-                document.getElementById('authView').style.display = 'none';
-                document.getElementById('dashboardView').style.display = 'block';
-                document.getElementById('navUserArea').innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
-                            👋 Hi, ${data.user} ${data.is_admin ? '(Admin)' : ''}
-                        </span>
-                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
-                    </div>
-                `;
-                loadLedger();
-            }
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('authView').style.display = 'flex';
+            document.getElementById('dashboardView').style.display = 'none';
         });
     </script>
 </body>
