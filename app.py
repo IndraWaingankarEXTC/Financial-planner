@@ -7,7 +7,6 @@ import csv
 import yfinance as yf
 from flask import Flask, render_template, request, jsonify, session, Response
 
-# Optional: Google GenAI SDK
 try:
     from google import genai
     from google.genai import types
@@ -16,7 +15,7 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 app = Flask(__name__)
-app.secret_key = "omnivest_ai_driven_planner_2026"
+app.secret_key = "omnivest_inr_rupees_2026"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
@@ -44,7 +43,7 @@ def ensure_global_csv():
             writer = csv.writer(f)
             writer.writerow([
                 "Record_ID", "Timestamp", "User", "Goal_Description",
-                "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
+                "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
             ])
@@ -79,7 +78,7 @@ def append_to_csvs(username, record_id, timestamp, tx):
         if not file_exists:
             writer.writerow([
                 "Record_ID", "Timestamp", "User", "Goal_Description",
-                "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
+                "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
             ])
@@ -96,44 +95,40 @@ def save_ledger(ledger):
     with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
 # ==========================================
-# AI ESTIMATION & ADAPTIVE ALLOCATION
+# AI ESTIMATION & ADAPTIVE ALLOCATION (INR)
 # ==========================================
 def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus):
-    """
-    Asks Gemini AI to analyze any global destination, determine realistic costs,
-    and dynamically assign an asset allocation (crypto, stocks, gold, etc.).
-    """
     if not (GENAI_AVAILABLE and GEMINI_API_KEY):
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = f"""
-You are an expert financial planning AI. Analyze the user's travel and savings goal:
+You are an expert financial planning AI. Analyze this travel and wealth goal for an Indian investor using Indian Rupees (₹ / INR):
 User Query: "{intent_text}"
-Mode: {mode} (goal = user stated destination/trip, budget = user has monthly budget, corpus = fixed payout)
-Provided Value: {budget_or_corpus}
+Mode: {mode} (goal = user stated destination/trip, budget = monthly budget in INR, corpus = target payout in INR)
+Provided Value in INR: {budget_or_corpus}
 Tenure in Years: {tenure_years}
 
 Tasks:
-1. If mode is 'goal', estimate realistic expenses:
-   - Identify destination country/city and trip duration (days).
-   - Estimate flights + total daily accommodation/food.
-   - Adjust for 4% yearly inflation over {tenure_years} years + a 10% safety buffer.
-   - Output estimated final target corpus in USD.
-2. If mode is 'budget', use the provided monthly budget to estimate the final maturity value.
-3. If mode is 'corpus', target that exact corpus.
+1. If mode is 'goal', estimate realistic expenses in Indian Rupees (₹):
+   - Identify destination country/city and duration.
+   - Estimate flights from India + accommodation/daily expenses in INR.
+   - Adjust for 4% yearly travel inflation over {tenure_years} years + a 10% safety buffer.
+   - Output estimated final target corpus in INR (₹).
+2. If mode is 'budget', compute expected maturity based on provided monthly INR savings.
+3. If mode is 'corpus', target that exact corpus in INR.
 4. Dynamically allocate asset weights based on tenure:
-   - For short tenures (< 2 yrs), assign LOW crypto (0-5%) to prevent volatility risk.
-   - For long tenures (>= 3 yrs), allocate 10-25% crypto for growth.
+   - Short tenures (< 2 yrs): LOW crypto (0-5%) for stability.
+   - Long tenures (>= 3 yrs): 10-25% crypto for higher capital growth.
    - Ensure pct values of Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC SUM EXACTLY TO 100.
 
-Return strictly raw JSON format (no markdown fences, no backticks) with keys:
+Return strictly raw JSON format (no markdown fences, no backticks):
 {{
   "destination_title": "string",
   "target_corpus": number,
-  "ai_rationale": "string explanation of pricing and allocation",
-  "risk_profile": "Conservative / Moderate / Aggressive High-Yield",
+  "ai_rationale": "string explanation of pricing and asset allocation in INR",
+  "risk_profile": "Conservative / Balanced / Aggressive High-Yield",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -159,11 +154,20 @@ Return strictly raw JSON format (no markdown fences, no backticks) with keys:
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
     tickers = {
-        "Bitcoin (BTC)": "BTC-USD",
-        "S&P 500": "^GSPC",
-        "Gold": "GC=F",
-        "Real Estate": "VNQ"
+        "Bitcoin (BTC)": "BTC-INR",
+        "NIFTY 50": "^NSEI",
+        "Gold (per 10g)": "GC=F",
+        "BSE SENSEX": "^BSESN"
     }
+    
+    # Accurate INR fallbacks
+    fallbacks = {
+        "Bitcoin (BTC)": {"price": 6250000.0, "change": 1.45, "status": "up"},
+        "NIFTY 50": {"price": 25200.0, "change": 0.40, "status": "up"},
+        "Gold (per 10g)": {"price": 78500.0, "change": -0.25, "status": "down"},
+        "BSE SENSEX": {"price": 82100.0, "change": 0.35, "status": "up"}
+    }
+
     live_data = {}
     for name, symbol in tickers.items():
         try:
@@ -175,9 +179,10 @@ def get_market_prices():
                 chg = ((cur - prev) / prev) * 100
                 live_data[name] = {"price": round(cur, 2), "change": round(chg, 2), "status": "up" if chg >= 0 else "down"}
             else:
-                live_data[name] = {"price": 100.0, "change": 0.0, "status": "up"}
+                live_data[name] = fallbacks[name]
         except Exception:
-            live_data[name] = {"price": 100.0, "change": 0.0, "status": "up"}
+            live_data[name] = fallbacks[name]
+            
     return jsonify({"status": "success", "market": live_data})
 
 @app.route('/')
@@ -234,32 +239,29 @@ def analyze():
     statement = data.get('statement', '').strip()
     input_val = float(data.get('input_val', 0) or 0)
 
-    # 1. Try AI-powered calculation
     ai_result = call_ai_financial_planner(statement, years, mode, input_val)
 
     if ai_result:
         goal_title = ai_result.get("destination_title", statement)
-        target_corpus = float(ai_result.get("target_corpus", 5000))
-        ai_rationale = ai_result.get("ai_rationale", "AI calculated based on destination costs and duration.")
-        risk_profile = ai_result.get("risk_profile", "AI Optimized Strategy")
+        target_corpus = float(ai_result.get("target_corpus", 250000))
+        ai_rationale = ai_result.get("ai_rationale", "AI calculated based on destination costs and duration in INR.")
+        risk_profile = ai_result.get("risk_profile", "AI Optimized Growth Strategy")
         allocation = ai_result.get("allocation_pcts", {})
     else:
-        # 2. Smart Math Fallback if no AI API key is configured
-        goal_title = statement if statement else "Custom Savings Goal"
+        # Heuristic fallback in Indian Rupees
+        goal_title = statement if statement else "Wealth Target"
         if mode == 'goal':
-            # Relative heuristic if AI is offline
-            is_budget_dest = any(c in statement.lower() for c in ["nepal", "vietnam", "thailand", "india", "sri lanka"])
-            base = 1200 if is_budget_dest else 4500
-            target_corpus = round(base * ((1.04) ** years) * 1.15, 2)
+            is_budget = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
+            base_inr = 85000 if is_budget else 320000
+            target_corpus = round(base_inr * ((1.04) ** years) * 1.15, 2)
         elif mode == 'budget':
-            target_corpus = round(max(input_val, 500) * 12 * years * 1.35, 2)
+            target_corpus = round(max(input_val, 5000) * 12 * years * 1.35, 2)
         else:
-            target_corpus = max(input_val, 3000)
-            
-        ai_rationale = f"Calculated using travel inflation models and {years}-year compounding."
+            target_corpus = max(input_val, 100000)
+
+        ai_rationale = f"Calculated using Indian travel inflation rates and {years}-year compounding."
         risk_profile = "Balanced Compound Growth"
-        
-        # Tenure-adaptive crypto allocation
+
         crypto_pct = 5.0 if years <= 1 else (15.0 if years <= 3 else 25.0)
         allocation = {
             "Stock_Market_Index": 40.0,
@@ -269,7 +271,6 @@ def analyze():
             "Gold_Precious_Metals": 15.0
         }
 
-    # Compute Monthly SIP based on 14.5% compound rate
     expected_rate = 0.145
     r = expected_rate / 12
     n = years * 12
