@@ -3,13 +3,12 @@ import json
 import time
 import re
 import os
-import io
 import csv
 import yfinance as yf
 from flask import Flask, render_template, request, jsonify, session, Response
 
 app = Flask(__name__)
-app.secret_key = "omnivest_phone_auth_secret_2026"
+app.secret_key = "omnivest_fixdeal_secret_2026"
 
 USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
@@ -34,19 +33,18 @@ def ensure_global_csv():
         with open(GLOBAL_CSV_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([
-                "Block_Index", "Timestamp", "Tx_ID", "User", "Goal_Description",
+                "Record_ID", "Timestamp", "User", "Goal_Description",
                 "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
-                "Risk_Level", "Block_Hash"
+                "Risk_Level"
             ])
 
-def append_to_csvs(username, block_index, timestamp, tx):
+def append_to_csvs(username, record_id, timestamp, tx):
     ensure_global_csv()
     pf = tx.get('portfolio', {})
     row_data = [
-        block_index,
+        record_id,
         time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
-        tx.get('tx_id'),
         username,
         tx.get('goal'),
         tx.get('monthly_investment'),
@@ -58,121 +56,57 @@ def append_to_csvs(username, block_index, timestamp, tx):
         pf.get('Real_Estate_REITs', {}).get('pct', 0),
         pf.get('Gold_Precious_Metals', {}).get('pct', 0),
         pf.get('Cryptocurrency_BTC', {}).get('pct', 0),
-        tx.get('risk_profile'),
-        tx.get('block_hash', '')
+        tx.get('risk_profile')
     ]
 
-    # Append to global master CSV (Admin view)
     with open(GLOBAL_CSV_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(row_data)
 
-    # Append to user-specific CSV
     user_csv = get_user_csv_filename(username)
     user_file_exists = os.path.exists(user_csv)
     with open(user_csv, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         if not user_file_exists:
             writer.writerow([
-                "Block_Index", "Timestamp", "Tx_ID", "User", "Goal_Description",
+                "Record_ID", "Timestamp", "User", "Goal_Description",
                 "Monthly_SIP", "Target_Corpus", "Tenure_Years", "Projected_Maturity",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
-                "Risk_Level", "Block_Hash"
+                "Risk_Level"
             ])
         writer.writerow(row_data)
 
-# ==========================================
-# BLOCKCHAIN ENGINE
-# ==========================================
-class Block:
-    def __init__(self, index, timestamp, transactions, previous_hash, nonce=0):
-        self.index = index
-        self.timestamp = timestamp
-        self.transactions = transactions
-        self.previous_hash = previous_hash
-        self.nonce = nonce
-        self.hash = self.calculate_hash()
+def load_ledger():
+    if os.path.exists(LEDGER_FILE):
+        try:
+            with open(LEDGER_FILE, "r") as f: return json.load(f)
+        except Exception: return []
+    return []
 
-    def calculate_hash(self):
-        block_string = json.dumps({
-            "index": self.index, "timestamp": self.timestamp,
-            "transactions": self.transactions, "previous_hash": self.previous_hash, "nonce": self.nonce
-        }, sort_keys=True)
-        return hashlib.sha256(block_string.encode()).hexdigest()
-
-    def mine_block(self, difficulty=2):
-        target = "0" * difficulty
-        while not self.hash.startswith(target):
-            self.nonce += 1
-            self.hash = self.calculate_hash()
-
-class Blockchain:
-    def __init__(self, storage_file=LEDGER_FILE):
-        self.storage_file = storage_file
-        self.chain = []
-        self.difficulty = 2
-        self.pending_transactions = []
-        self.load_chain()
-
-    def create_genesis_block(self):
-        genesis = Block(0, time.time(), [{"system": "Phone Auth Ledger Genesis"}], "0")
-        genesis.mine_block(self.difficulty)
-        self.chain.append(genesis)
-        self.save_chain()
-
-    def get_latest_block(self):
-        return self.chain[-1]
-
-    def add_transaction(self, user, goal, monthly_investment, target_savings, target_fund, tenure, risk_profile, portfolio):
-        tx = {
-            "tx_id": hashlib.sha256(f"{user}{time.time()}".encode()).hexdigest()[:12].upper(),
-            "user": user, "goal": goal, "monthly_investment": monthly_investment,
-            "target_savings_goal": target_savings, "target_fund": target_fund,
-            "tenure_years": tenure, "risk_profile": risk_profile, "portfolio": portfolio, "timestamp": time.time()
-        }
-        self.pending_transactions.append(tx)
-        return tx
-
-    def mine_pending_transactions(self):
-        if not self.pending_transactions: return None
-        new_block = Block(
-            index=len(self.chain), timestamp=time.time(),
-            transactions=self.pending_transactions, previous_hash=self.get_latest_block().hash
-        )
-        new_block.mine_block(self.difficulty)
-        
-        for tx in self.pending_transactions:
-            tx['block_hash'] = new_block.hash
-            append_to_csvs(tx['user'], new_block.index, new_block.timestamp, tx)
-            
-        self.chain.append(new_block)
-        self.pending_transactions = []
-        self.save_chain()
-        return new_block
-
-    def save_chain(self):
-        serializable = [{"index": b.index, "timestamp": b.timestamp, "transactions": b.transactions, "previous_hash": b.previous_hash, "nonce": b.nonce, "hash": b.hash} for b in self.chain]
-        with open(self.storage_file, "w") as f: json.dump(serializable, f, indent=4)
-
-    def load_chain(self):
-        ensure_global_csv()
-        if os.path.exists(self.storage_file):
-            try:
-                with open(self.storage_file, "r") as f:
-                    data = json.load(f)
-                    self.chain = [Block(b['index'], b['timestamp'], b['transactions'], b['previous_hash'], b['nonce']) for b in data]
-            except Exception:
-                self.chain = []; self.create_genesis_block()
-        else: self.create_genesis_block()
-
-blockchain = Blockchain()
+def save_ledger(ledger):
+    with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
 # ==========================================
 # API ENDPOINTS
 # ==========================================
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
-    tickers = {"S&P 500": "^GSPC", "Gold": "GC=F", "Bitcoin": "BTC-USD", "Real Estate": "VNQ"}
+    # Live Yahoo Finance Tickers
+    tickers = {
+        "Bitcoin (BTC)": "BTC-USD",
+        "S&P 500": "^GSPC",
+        "Gold": "GC=F",
+        "Real Estate (REIT)": "VNQ"
+    }
+    
+    # Accurate fallback prices if network times out
+    fallbacks = {
+        "Bitcoin (BTC)": {"price": 68450.00, "change": 1.45, "status": "up"},
+        "S&P 500": {"price": 5750.25, "change": 0.35, "status": "up"},
+        "Gold": {"price": 2650.80, "change": -0.20, "status": "down"},
+        "Real Estate (REIT)": {"price": 93.40, "change": 0.15, "status": "up"}
+    }
+
     live_data = {}
     for name, symbol in tickers.items():
         try:
@@ -183,47 +117,47 @@ def get_market_prices():
                 prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
                 chg = ((cur - prev) / prev) * 100
                 live_data[name] = {"price": round(cur, 2), "change": round(chg, 2), "status": "up" if chg >= 0 else "down"}
-            else: live_data[name] = {"price": 0.0, "change": 0.0, "status": "neutral"}
+            else:
+                live_data[name] = fallbacks[name]
         except Exception:
-            live_data[name] = {"price": 100.0, "change": 0.4, "status": "up"}
+            live_data[name] = fallbacks[name]
+            
     return jsonify({"status": "success", "market": live_data})
 
 @app.route('/')
-def home(): return render_template('index.html')
+def home():
+    return render_template('index.html')
 
 @app.route('/api/auth', methods=['POST'])
 def auth():
     data = request.json or {}
-    action = data.get('action')
+    role = data.get('role', 'customer')
     username = data.get('username', '').strip()
     phone = data.get('phone', '').strip()
 
     if not username or not phone:
-        return jsonify({"status": "error", "message": "Please enter both your name and phone number."}), 400
+        return jsonify({"status": "error", "message": "Username and phone number are required."}), 400
+
+    if role == 'admin':
+        if username.lower() == 'admin' and phone == '0000000000':
+            session['user'] = 'Admin Master'
+            session['is_admin'] = True
+            return jsonify({"status": "success", "username": "Admin Master", "is_admin": True})
+        else:
+            return jsonify({"status": "error", "message": "Invalid Admin credentials. Use admin & 0000000000."}), 401
 
     users = load_users()
     phone_hash = hashlib.sha256(phone.encode()).hexdigest()
 
-    if action == 'signup':
-        if username in users:
-            return jsonify({"status": "error", "message": "User already exists. Please sign in using your phone number."}), 400
+    if username not in users:
         users[username] = {"phone_hash": phone_hash}
         save_users(users)
-        session['user'] = username
-        session['is_admin'] = (username.lower() == 'admin' and phone == '0000000000')
-        return jsonify({"status": "success", "username": username})
+    elif users[username]["phone_hash"] != phone_hash:
+        return jsonify({"status": "error", "message": "Phone number does not match registered username."}), 401
 
-    elif action == 'login':
-        if username not in users:
-            # Auto-register if returning with phone number for quick access
-            users[username] = {"phone_hash": phone_hash}
-            save_users(users)
-        elif users[username]["phone_hash"] != phone_hash:
-            return jsonify({"status": "error", "message": "Invalid phone number for this username."}), 401
-
-        session['user'] = username
-        session['is_admin'] = (username.lower() == 'admin' and phone == '0000000000')
-        return jsonify({"status": "success", "username": username})
+    session['user'] = username
+    session['is_admin'] = False
+    return jsonify({"status": "success", "username": username, "is_admin": False})
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -235,36 +169,64 @@ def logout():
 def current_session():
     return jsonify({"user": session.get('user'), "is_admin": session.get('is_admin', False)})
 
+def parse_duration_in_days(text):
+    # Extracts days, weeks, or months to determine proper stay cost
+    text = text.lower()
+    days = 7 # Default standard trip length
+    
+    day_match = re.search(r'(\d+)\s*(?:day|days)', text)
+    week_match = re.search(r'(\d+)\s*(?:week|weeks)', text)
+    month_match = re.search(r'(\d+)\s*(?:month|months)', text)
+
+    if day_match:
+        days = int(day_match.group(1))
+    elif week_match:
+        days = int(week_match.group(1)) * 7
+    elif month_match:
+        days = int(month_match.group(1)) * 30
+
+    return max(days, 1)
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}
     
     mode = data.get('mode', 'goal')
-    years = int(data.get('years', 5))
+    years = int(data.get('years', 3))
     statement = data.get('statement', '').strip().lower()
     input_val = float(data.get('input_val', 0) or 0)
 
-    dest_base_costs = {
-        "italy": 9000, "switzerland": 13000, "singapore": 6500, 
-        "japan": 9500, "dubai": 5500, "europe": 11000, "usa": 12000
+    # Dynamic destination daily cost engine ($/day living + flights)
+    destinations = {
+        "italy": {"daily": 180, "flight": 1200},
+        "switzerland": {"daily": 260, "flight": 1300},
+        "singapore": {"daily": 150, "flight": 600},
+        "japan": {"daily": 190, "flight": 1100},
+        "dubai": {"daily": 160, "flight": 500},
+        "usa": {"daily": 220, "flight": 1400}
     }
-    
+
     target_corpus = 0
     goal_title = "Custom Wealth Strategy"
 
-    for dest, base_cost in dest_base_costs.items():
-        if dest in statement:
-            inflated_cost = base_cost * ((1.05) ** years)
-            target_corpus = round(inflated_cost * 1.15, 2)
-            goal_title = f"Trip to {dest.capitalize()} (with Buffer)"
-            break
-
     if mode == 'goal':
-        if target_corpus <= 0:
-            target_corpus = max(input_val if input_val > 0 else 35000, 10000)
-            goal_title = statement if statement else "Target Goal Portfolio"
-        
+        matched_dest = None
+        for dest, costs in destinations.items():
+            if dest in statement:
+                matched_dest = dest
+                trip_days = parse_duration_in_days(statement)
+                raw_trip_cost = costs["flight"] + (costs["daily"] * trip_days)
+                # 4% annual inflation over wait years + 15% buffer
+                inflated_trip = raw_trip_cost * ((1.04) ** years)
+                target_corpus = round(inflated_trip * 1.15, 2)
+                goal_title = f"{trip_days}-Day Trip to {dest.capitalize()} (with Buffer)"
+                break
+
+        if not matched_dest:
+            target_corpus = max(input_val if input_val > 0 else 25000, 5000)
+            goal_title = statement if statement else "Custom Savings Target"
+
         expected_rate = 0.145
         r = expected_rate / 12
         n = years * 12
@@ -272,23 +234,24 @@ def analyze():
         total_invested = round(monthly_sip * n, 2)
 
     elif mode == 'budget':
-        monthly_sip = max(input_val, 1000)
+        monthly_sip = max(input_val, 500)
         expected_rate = 0.145
         r = expected_rate / 12
         n = years * 12
         total_invested = round(monthly_sip * n, 2)
         target_corpus = round(monthly_sip * (((1 + r)**n - 1) / r) * (1 + r), 2)
-        goal_title = "Monthly SIP Wealth Accumulator"
+        goal_title = "Monthly SIP Growth Plan"
 
     else:
-        target_corpus = max(input_val, 20000)
+        target_corpus = max(input_val, 10000)
         expected_rate = 0.145
         r = expected_rate / 12
         n = years * 12
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
-        goal_title = "Fixed Corpus Target Builder"
+        goal_title = "Fixed Target Builder"
 
+    # Deterministic dynamic allocation matrix
     raw_weights = {
         "Stock_Market_Index": {"pct": 40.0, "cagr": 15.0},
         "Cryptocurrency_BTC": {"pct": 25.0, "cagr": 22.0},
@@ -312,8 +275,7 @@ def analyze():
         "status": "success",
         "data": {
             "goal_identified": goal_title,
-            "risk_profile": "High-Growth Maximized Strategy",
-            "is_risky": True,
+            "risk_profile": "High-Yield Growth Portfolio",
             "tenure_years": years,
             "monthly_allocation": monthly_sip,
             "target_savings_goal": target_corpus,
@@ -322,7 +284,7 @@ def analyze():
             "estimated_maturity_value": target_corpus,
             "estimated_profit": round(target_corpus - total_invested, 2),
             "portfolio_breakdown": portfolio_detailed,
-            "ai_rationale": f"Deterministically optimized for maximum compounding returns over {years} years."
+            "ai_rationale": f"Calculated based on actual stay duration, flights, and 15% contingency buffer over {years} years."
         }
     })
 
@@ -331,29 +293,44 @@ def execute():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}; plan = data.get('plan', {}); u = session['user']
     
-    blockchain.add_transaction(
-        u, plan.get('goal_identified'), plan.get('monthly_allocation'), 
-        plan.get('target_savings_goal'), plan.get('estimated_maturity_value'), 
-        plan.get('tenure_years'), plan.get('risk_profile'), plan.get('portfolio_breakdown')
-    )
-    block = blockchain.mine_pending_transactions()
-    return jsonify({"status": "success", "block_index": block.index})
+    ledger = load_ledger()
+    record_id = len(ledger) + 1
+    tx = {
+        "record_id": record_id,
+        "user": u,
+        "goal": plan.get('goal_identified'),
+        "monthly_investment": plan.get('monthly_allocation'),
+        "target_savings_goal": plan.get('target_savings_goal'),
+        "target_fund": plan.get('estimated_maturity_value'),
+        "tenure_years": plan.get('tenure_years'),
+        "risk_profile": plan.get('risk_profile'),
+        "portfolio": plan.get('portfolio_breakdown'),
+        "timestamp": time.time()
+    }
+    ledger.append(tx)
+    save_ledger(ledger)
+    append_to_csvs(u, record_id, tx["timestamp"], tx)
+
+    return jsonify({"status": "success", "record_id": record_id})
 
 @app.route('/api/my-ledger', methods=['GET'])
 def my_ledger():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     u = session['user']
     is_admin = session.get('is_admin', False)
+    ledger = load_ledger()
     user_txs = []
     tot_p, tot_m = 0, 0
 
-    for b in blockchain.chain:
-        for tx in b.transactions:
-            # If admin, show all records. If regular user, show only their personal records.
-            if is_admin or tx.get('user') == u:
-                tot_p += float(tx.get('monthly_investment', 0)) * int(tx.get('tenure_years', 5)) * 12
-                tot_m += float(tx.get('target_fund', 0))
-                user_txs.append({"block_index": b.index, "block_hash": b.hash, "timestamp": time.strftime('%d %b %Y, %H:%M', time.localtime(b.timestamp)), "tx": tx})
+    for tx in ledger:
+        if is_admin or tx.get('user') == u:
+            tot_p += float(tx.get('monthly_investment', 0)) * int(tx.get('tenure_years', 5)) * 12
+            tot_m += float(tx.get('target_fund', 0))
+            user_txs.append({
+                "record_id": tx.get("record_id"),
+                "timestamp": time.strftime('%d %b %Y, %H:%M', time.localtime(tx.get("timestamp"))),
+                "tx": tx
+            })
 
     return jsonify({
         "records": list(reversed(user_txs)),
@@ -372,11 +349,9 @@ def export_csv():
     is_admin = session.get('is_admin', False)
 
     if is_admin:
-        # Master download containing all investments by all users
         csv_file = GLOBAL_CSV_FILE
         filename = "global_master_investments.csv"
     else:
-        # Personal download containing only the logged-in user's investments
         csv_file = get_user_csv_filename(u)
         filename = f"{u}_investment_portfolio.csv"
 
