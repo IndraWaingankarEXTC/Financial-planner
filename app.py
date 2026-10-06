@@ -15,7 +15,7 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 app = Flask(__name__)
-app.secret_key = "omnivest_ai_dynamic_market_2026"
+app.secret_key = "omnivest_inr_travel_tiers_2026"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
@@ -95,74 +95,44 @@ def load_ledger():
 def save_ledger(ledger):
     with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
-def fetch_live_market_summary():
-    """yFinance से लाइव डेटा लेता है ताकि AI रियल-टाइम मार्केट समझ सके"""
-    tickers = {
-        "Bitcoin": "BTC-INR",
-        "NIFTY_50": "^NSEI",
-        "Gold": "GC=F",
-        "BSE_Sensex": "^BSESN"
-    }
-    summary = {}
-    for name, sym in tickers.items():
-        try:
-            t = yf.Ticker(sym)
-            df = t.history(period="2d")
-            if len(df) >= 1:
-                cur = float(df['Close'].iloc[-1])
-                prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
-                chg = round(((cur - prev) / prev) * 100, 2)
-                summary[name] = {"price": round(cur, 2), "change_pct": chg}
-            else:
-                summary[name] = {"price": 0.0, "change_pct": 0.0}
-        except Exception:
-            summary[name] = {"price": 0.0, "change_pct": 0.0}
-    return summary
-
 # ==========================================
-# AI DYNAMIC PORTFOLIO ALLOCATION
+# AI ESTIMATION WITH TRAVEL TIER & RISK PROFILE
 # ==========================================
-def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, travel_style, risk_tier, market_snapshot):
+def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, travel_style, risk_tier):
     if not (GENAI_AVAILABLE and GEMINI_API_KEY):
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = f"""
-You are an advanced quantitative financial advisor and wealth manager.
-The investor is based in India and investments are in Indian Rupees (₹ / INR).
-
-Current Live Market Conditions fetched via yFinance:
-{json.dumps(market_snapshot, indent=2)}
-
-User Goals and Preferences:
-- Query / Destination: "{intent_text}"
-- Planning Mode: {mode} (goal = user has destination, budget = monthly budget in INR, corpus = target payout in INR)
+You are an expert financial and travel advisor for an Indian investor planning in Indian Rupees (₹ / INR).
+Inputs:
+- Intent / Destination: "{intent_text}"
+- Mode: {mode} (goal = user has destination, budget = user has monthly budget in INR, corpus = user has fixed target corpus in INR)
 - Value (if applicable): {budget_or_corpus}
 - Tenure: {tenure_years} years
-- Travel Style: {travel_style} (budget = backpacker/hostels, mid = 3-4 star stays, luxury = 5-star/private tours)
-- Risk Preference Selected by User: {risk_tier} (low, mid, or high)
+- Selected Travel Style: {travel_style} (budget = backpacker/hostels, mid = 3-star standard/hotels, luxury = 5-star/private tours)
+- Selected Risk Appetite: {risk_tier} (low = capital preservation, mid = balanced growth, high = aggressive equity & crypto)
 
-CRITICAL INSTRUCTIONS:
-1. DO NOT use hardcoded asset allocation percentages.
-2. YOU (the AI) must analyze the user's risk tolerance ('{risk_tier}') AND evaluate the current market scenario (e.g., if Bitcoin is overheating or Gold is acting as a hedge).
-3. Decide the optimal asset split across:
-   - Stock_Market_Index
-   - Mutual_Funds
-   - Real_Estate_REITs
-   - Gold_Precious_Metals
-   - Cryptocurrency_BTC
-   * The sum of these 5 percentages MUST EQUAL EXACTLY 100.
-4. Estimate realistic expected portfolio annual CAGR (e.g., 0.08 to 0.18) based on your custom asset mix.
-5. If mode is 'goal', estimate realistic travel expenses (flights + daily stay adjusted for {travel_style} style and 4% yearly inflation over {tenure_years} years + 10% contingency buffer) in INR.
+Instructions:
+1. For mode 'goal':
+   - Calculate realistic round-trip flights from India + hotel/living cost based strictly on the selected travel_style:
+     * budget: hostel/budget stays, street/local food, public transit
+     * mid: comfortable 3-4 star stays, cafes/restaurants, city transit
+     * luxury: 4-5 star luxury hotels, fine dining, private taxis
+   - Apply 4% annual travel inflation across {tenure_years} years + 10% contingency buffer.
+   - Return target_corpus in INR.
+2. For risk_tier allocation:
+   - 'low': 0% Cryptocurrency_BTC, 15% Stock_Market_Index, 40% Mutual_Funds, 25% Real_Estate_REITs, 20% Gold_Precious_Metals.
+   - 'mid': 5% Cryptocurrency_BTC, 40% Stock_Market_Index, 25% Mutual_Funds, 15% Real_Estate_REITs, 15% Gold_Precious_Metals.
+   - 'high': 20% Cryptocurrency_BTC, 45% Stock_Market_Index, 15% Mutual_Funds, 10% Real_Estate_REITs, 10% Gold_Precious_Metals.
+   - All 5 allocation percentages must sum to EXACTLY 100.
 
-Return STRICT raw JSON (no backticks, no markdown):
+Return STRICT raw JSON (no markdown fences, no backticks):
 {{
   "destination_title": "string",
   "target_corpus": number,
-  "expected_annual_rate": number,
-  "risk_profile_description": "string describing your custom risk strategy",
-  "ai_rationale": "Explain WHY you chose this exact percentage breakdown based on current market data and risk level",
+  "ai_rationale": "Detailed explanation of estimated expenses for {travel_style} style and {risk_tier} portfolio strategy",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -179,11 +149,11 @@ Return STRICT raw JSON (no backticks, no markdown):
         )
         return json.loads(response.text)
     except Exception as e:
-        print(f"Gemini AI Dynamic Error: {e}")
+        print(f"AI Model Error: {e}")
         return None
 
 # ==========================================
-# API ENDPOINTS
+# API ROUTES
 # ==========================================
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
@@ -207,13 +177,13 @@ def get_market_prices():
             if len(df) >= 1:
                 cur = float(df['Close'].iloc[-1])
                 prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
-                chg = round(((cur - prev) / prev) * 100, 2)
-                live_data[name] = {"price": round(cur, 2), "change": chg, "status": "up" if chg >= 0 else "down"}
+                chg = ((cur - prev) / prev) * 100
+                live_data[name] = {"price": round(cur, 2), "change": round(chg, 2), "status": "up" if chg >= 0 else "down"}
             else:
                 live_data[name] = fallbacks[name]
         except Exception:
             live_data[name] = fallbacks[name]
-    return jsonify({"status": "success", "market": live_data, "server_time": time.time()})
+    return jsonify({"status": "success", "market": live_data})
 
 @app.route('/')
 def home():
@@ -227,7 +197,7 @@ def auth():
     phone = data.get('phone', '').strip()
 
     if not username or not phone:
-        return jsonify({"status": "error", "message": "Username and phone are required."}), 400
+        return jsonify({"status": "error", "message": "Username and phone number are required."}), 400
 
     if role == 'admin':
         if username.lower() == 'admin' and phone == '0000000000':
@@ -271,60 +241,96 @@ def analyze():
     travel_style = data.get('travel_style', 'mid')
     risk_tier = data.get('risk_tier', 'mid')
 
-    # 1. Fetch live market snapshot from yFinance for AI decision making
-    market_snapshot = fetch_live_market_summary()
+    # CAGR and Expected Annual Returns mapped by Risk Tier
+    risk_configs = {
+        "low": {
+            "expected_rate": 0.085,
+            "label": "Low Risk (Capital Protection)",
+            "allocation": {
+                "Stock_Market_Index": 15.0,
+                "Mutual_Funds": 40.0,
+                "Real_Estate_REITs": 25.0,
+                "Gold_Precious_Metals": 20.0,
+                "Cryptocurrency_BTC": 0.0
+            }
+        },
+        "mid": {
+            "expected_rate": 0.125,
+            "label": "Mid Risk (Balanced Growth)",
+            "allocation": {
+                "Stock_Market_Index": 40.0,
+                "Mutual_Funds": 25.0,
+                "Real_Estate_REITs": 15.0,
+                "Gold_Precious_Metals": 15.0,
+                "Cryptocurrency_BTC": 5.0
+            }
+        },
+        "high": {
+            "expected_rate": 0.160,
+            "label": "High Risk (Aggressive Compounder)",
+            "allocation": {
+                "Stock_Market_Index": 45.0,
+                "Mutual_Funds": 15.0,
+                "Real_Estate_REITs": 10.0,
+                "Gold_Precious_Metals": 10.0,
+                "Cryptocurrency_BTC": 20.0
+            }
+        }
+    }
 
-    # 2. Ask Gemini AI to dynamically determine allocation & returns
-    ai_result = call_ai_financial_planner(statement, years, mode, input_val, travel_style, risk_tier, market_snapshot)
+    selected_risk = risk_configs.get(risk_tier, risk_configs["mid"])
+
+    ai_result = call_ai_financial_planner(statement, years, mode, input_val, travel_style, risk_tier)
 
     if ai_result:
         goal_title = ai_result.get("destination_title", statement)
         target_corpus = float(ai_result.get("target_corpus", 250000))
         ai_rationale = ai_result.get("ai_rationale", "")
-        risk_profile = ai_result.get("risk_profile_description", f"AI Custom {risk_tier.capitalize()} Strategy")
-        allocation = ai_result.get("allocation_pcts", {})
-        expected_rate = float(ai_result.get("expected_annual_rate", 0.125))
+        allocation = ai_result.get("allocation_pcts", selected_risk["allocation"])
     else:
-        # Fallback if AI is offline
+        # Rule-based calculation if AI is offline
         goal_title = statement if statement else "Wealth Goal"
-        style_mult = {"budget": 0.55, "mid": 1.0, "luxury": 2.1}.get(travel_style, 1.0)
-        
+        style_multipliers = {"budget": 0.55, "mid": 1.0, "luxury": 2.1}
+        mult = style_multipliers.get(travel_style, 1.0)
+
         if mode == 'goal':
             is_budget_dest = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
-            base = (85000 if is_budget_dest else 250000) * style_mult
-            target_corpus = round(base * ((1.04) ** years) * 1.10, 2)
+            base_inr = (85000 if is_budget_dest else 250000) * mult
+            target_corpus = round(base_inr * ((1.04) ** years) * 1.10, 2)
         elif mode == 'budget':
-            target_corpus = round(max(input_val, 5000) * 12 * years * 1.35, 2)
+            target_corpus = round(max(input_val, 5000) * 12 * years * (1 + selected_risk["expected_rate"]), 2)
         else:
             target_corpus = max(input_val, 100000)
 
-        rate_map = {"low": 0.085, "mid": 0.125, "high": 0.160}
-        expected_rate = rate_map.get(risk_tier, 0.125)
-        risk_profile = f"Market-Calibrated {risk_tier.capitalize()} Risk Strategy"
-        ai_rationale = f"Evaluated based on current live indices and {risk_tier} risk profile."
-        
-        allocation = {
-            "low": {"Stock_Market_Index": 20.0, "Mutual_Funds": 40.0, "Real_Estate_REITs": 20.0, "Gold_Precious_Metals": 20.0, "Cryptocurrency_BTC": 0.0},
-            "mid": {"Stock_Market_Index": 40.0, "Mutual_Funds": 25.0, "Real_Estate_REITs": 15.0, "Gold_Precious_Metals": 15.0, "Cryptocurrency_BTC": 5.0},
-            "high": {"Stock_Market_Index": 45.0, "Mutual_Funds": 15.0, "Real_Estate_REITs": 10.0, "Gold_Precious_Metals": 10.0, "Cryptocurrency_BTC": 20.0}
-        }.get(risk_tier)
+        ai_rationale = f"Calibrated for {travel_style.capitalize()} style travel and a {selected_risk['label']} model."
+        allocation = selected_risk["allocation"]
 
-    # Monthly SIP Annuity Formula
+    # Monthly SIP using Annuity Math
+    expected_rate = selected_risk["expected_rate"]
     r = expected_rate / 12
     n = years * 12
     monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
     total_invested = round(monthly_sip * n, 2)
 
+    cagr_map = {
+        "Stock_Market_Index": 14.0,
+        "Cryptocurrency_BTC": 24.0,
+        "Mutual_Funds": 11.5,
+        "Real_Estate_REITs": 10.0,
+        "Gold_Precious_Metals": 9.0
+    }
+
     portfolio_detailed = {}
     for asset, pct in allocation.items():
         pct_val = float(pct)
         allocated_principal = round(total_invested * (pct_val / 100.0), 2)
-        # Expected return proportional to asset weight
-        projected_return = round(allocated_principal * ((1 + expected_rate) ** years), 2)
+        cagr = cagr_map.get(asset, 11.0)
+        projected_return = round(allocated_principal * ((1 + (cagr/100.0)) ** years), 2)
         portfolio_detailed[asset] = {
             "pct": pct_val,
             "amount": allocated_principal,
-            "projected_return": projected_return
+            "projected_return": projected_return,
+            "cagr": f"{cagr}%"
         }
 
     return jsonify({
@@ -332,7 +338,7 @@ def analyze():
         "data": {
             "goal_identified": goal_title,
             "travel_style": travel_style.capitalize(),
-            "risk_profile": risk_profile,
+            "risk_profile": selected_risk["label"],
             "tenure_years": years,
             "monthly_allocation": monthly_sip,
             "target_savings_goal": target_corpus,
