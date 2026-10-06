@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Live AI Wealth Planner (₹ INR)</title>
+    <title>OmniVest | Custom Travel & Wealth Planner (₹ INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -42,10 +42,9 @@
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
-        /* REAL-TIME LIVE MARKET TICKER */
         .market-ticker-bar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
             border-bottom: 2px solid #e2e8f0;
             font-size: 0.88rem;
             white-space: nowrap;
@@ -60,17 +59,7 @@
             padding: 5px 16px;
             margin: 4px 6px;
             font-weight: 700;
-            transition: background 0.3s ease, transform 0.2s ease;
         }
-        .price-flash-up {
-            background: #dcfce7 !important;
-            transform: scale(1.04);
-        }
-        .price-flash-down {
-            background: #ffe4e6 !important;
-            transform: scale(1.04);
-        }
-
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
@@ -175,14 +164,14 @@
             <div class="currency-badge curr-yen">¥</div>
             <div class="currency-badge curr-gbp">£</div>
         </div>
-        <h4 class="fw-bold text-dark" id="loadingText">Gemini AI Analyzing Live Markets...</h4>
-        <p class="text-muted small fw-semibold">Fetching yFinance quotes & deriving risk allocations dynamically...</p>
+        <h4 class="fw-bold text-dark" id="loadingText">Configuring Your Custom Plan...</h4>
+        <p class="text-muted small fw-semibold">Consulting AI for style, risk model, and target SIP (₹ INR)...</p>
     </div>
 
-    <!-- Live Ticker Bar with Live Pulse Indicator -->
+    <!-- Ticker -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
-            <i class="fa-solid fa-circle text-success fa-fade me-2" style="font-size: 0.75rem;"></i> Connecting to live yFinance feeds...
+            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live Indian indices...
         </div>
     </div>
 
@@ -190,7 +179,7 @@
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">₹ INR</span>
-                OmniVest <span class="badge bg-primary ms-2 fs-6">AI-Driven Allocator</span>
+                OmniVest <span class="text-muted ms-2 fs-6 fw-semibold">Custom Wealth & Travel</span>
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -208,7 +197,7 @@
                             <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
                         </div>
                         <h4 class="fw-bold">Sign In to OmniVest</h4>
-                        <p class="text-muted small">AI-powered asset distribution customized to your risk and market timing.</p>
+                        <p class="text-muted small">Choose your options & tailor your trip investments.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
@@ -308,7 +297,7 @@
                             </select>
                         </div>
 
-                        <!-- Travel Style (Goal mode only) -->
+                        <!-- Travel Luxury Level (Shown for Goal Mode) -->
                         <div class="mb-3" id="travelStyleContainer">
                             <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
                             <select id="travelStyleInput" class="form-select border-primary-subtle">
@@ -318,17 +307,14 @@
                             </select>
                         </div>
 
-                        <!-- User Risk Preference (Passed to AI to dynamically decide weights) -->
+                        <!-- Universal Risk Appetite Selector -->
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
+                            <label class="form-label small fw-bold text-muted">Investment Risk Tolerance</label>
                             <select id="riskTierInput" class="form-select border-info-subtle">
-                                <option value="low">🛡️ Low Risk (Capital Preservation - AI minimizes equity/crypto)</option>
-                                <option value="mid" selected>⚖️ Mid Risk (Balanced Growth - AI distributes across stocks/gold/crypto)</option>
-                                <option value="high">🚀 High Risk (Aggressive Compounding - AI maximizes growth assets)</option>
+                                <option value="low">🛡️ Low Risk (Capital Preservation: Debt, FDs, Gold, Index ~8.5%)</option>
+                                <option value="mid" selected>⚖️ Mid Risk (Balanced Growth: 40% Stocks, Mutual Funds, 5% BTC ~12.5%)</option>
+                                <option value="high">🚀 High Risk (Aggressive: 45% Equity, 20% BTC/Crypto ~16.0%)</option>
                             </select>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
-                                *Gemini AI determines actual percentage allotments in real-time based on live market conditions.
-                            </small>
                         </div>
 
                         <div class="mb-3" id="inputContainer">
@@ -342,14 +328,14 @@
                         </div>
 
                         <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
-                            Generate AI Market Plan (₹ INR)
+                            Calculate Custom Plan (₹ INR)
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
                     <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 text-dark">AI-Derived Portfolio Allocation</h5>
+                        <h5 class="fw-bold mb-3 text-dark">Asset Allocation & Returns</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
                             <div class="d-inline-flex gap-2 mb-3">
@@ -357,19 +343,19 @@
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Configure parameters on the left. The AI will evaluate live market trends and craft a customized strategy.</p>
+                            <p>Choose your comfort style & risk tolerance on the left, then click <strong>Calculate Custom Plan</strong>.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">AI Strategy</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Optimal Yield</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-light text-dark border me-1" id="styleBadge">Comfort: Standard</span>
                                 <span class="badge bg-info-subtle text-info border" id="tenureBadge">3 Years</span>
                             </div>
-                            <div class="p-3 bg-light rounded-3 border mb-3 small" id="resRationale"></div>
+                            <p class="small text-muted mb-3" id="resRationale"></p>
 
                             <div class="row g-2 text-center mb-3">
                                 <div class="col-6">
@@ -391,9 +377,9 @@
                                     <thead>
                                         <tr class="text-muted">
                                             <th>Asset Class</th>
-                                            <th>AI Determined Share</th>
+                                            <th>Share</th>
                                             <th>Principal (₹)</th>
-                                            <th>Projected Return (₹)</th>
+                                            <th>Est. Return (₹)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="allotmentTableBody"></tbody>
@@ -429,20 +415,21 @@
             <div class="modal-content p-3 rounded-4">
                 <div class="modal-header border-bottom">
                     <h5 class="modal-title fw-bold text-danger">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Investment Disclosures
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> Investment Terms & Disclosures
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body py-3">
                     <p class="small text-muted mb-2">Please acknowledge the disclosures before fixing your deal:</p>
                     <ol class="small text-secondary ps-3 mb-3">
-                        <li class="mb-2"><strong>AI Allocations:</strong> Portfolio weights are dynamically recommended by Gemini LLM based on live yFinance metrics.</li>
-                        <li class="mb-2"><strong>Market Fluctuations:</strong> Compounded returns are projections and subject to actual market volatility.</li>
+                        <li class="mb-2"><strong>Risk & Market Volatility:</strong> Expected CAGR rates vary based on your selected risk profile (Low/Mid/High).</li>
+                        <li class="mb-2"><strong>Fixed Duration:</strong> Portfolios are optimized for the complete target tenure.</li>
+                        <li class="mb-2"><strong>Travel Style Adjustments:</strong> Final costs depend on your chosen comfort tier (Budget vs Luxury).</li>
                     </ol>
                     <div class="form-check p-3 bg-light rounded-3 border">
                         <input class="form-check-input ms-0 me-2" type="checkbox" id="agreeTncCheck" onchange="toggleTncButton()">
                         <label class="form-check-label small fw-bold text-dark" for="agreeTncCheck">
-                            I accept the AI-recommended strategy and investment terms.
+                            I have read, understood, and accept all investment terms and disclosures.
                         </label>
                     </div>
                 </div>
@@ -459,7 +446,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let activePlan = null;
-        let lastPrices = {}; // रियल-टाइम बदलाव ट्रैक करने के लिए
 
         function showLoading(msg = "Crunching numbers...") {
             document.getElementById('loadingText').innerText = msg;
@@ -469,31 +455,16 @@
             document.getElementById('loadingOverlay').classList.remove('active');
         }
 
-        // ==========================================
-        // REAL-TIME AUTO-UPDATING MARKET TICKER
-        // ==========================================
         async function fetchMarketTicker() {
             try {
                 const res = await fetch('/api/market-prices');
                 const { market } = await res.json();
-                const container = document.getElementById('marketTickerContainer');
-                
-                let html = '<div class="container d-flex flex-wrap justify-content-center align-items-center">';
-                html += '<span class="badge bg-success-subtle text-success border me-2"><i class="fa-solid fa-circle fa-fade me-1"></i> LIVE</span>';
-
+                let html = '<div class="container d-flex flex-wrap justify-content-center">';
                 for (const [key, data] of Object.entries(market)) {
                     const cls = data.status === 'up' ? 'text-up' : 'text-down';
                     const icon = data.status === 'up' ? '▲' : '▼';
-                    
-                    // अगर प्राइस में बदलाव हुआ हो तो फ्लैश क्लास जोड़ें
-                    let flashClass = '';
-                    if (lastPrices[key] !== undefined && lastPrices[key] !== data.price) {
-                        flashClass = (data.price > lastPrices[key]) ? 'price-flash-up' : 'price-flash-down';
-                    }
-                    lastPrices[key] = data.price;
-
                     html += `
-                        <div class="ticker-pill ${flashClass}" id="ticker_${key.replace(/[^a-zA-Z0-9]/g, '')}">
+                        <div class="ticker-pill">
                             <span class="me-2 text-secondary">${key}:</span>
                             <span class="text-dark me-2">₹${data.price.toLocaleString('en-IN')}</span>
                             <span class="${cls}">${icon} ${data.change}%</span>
@@ -501,20 +472,10 @@
                     `;
                 }
                 html += '</div>';
-                container.innerHTML = html;
-
-                // 1 सेकंड बाद फ्लैश इफेक्ट हटाएँ
-                setTimeout(() => {
-                    document.querySelectorAll('.ticker-pill').forEach(el => {
-                        el.classList.remove('price-flash-up', 'price-flash-down');
-                    });
-                }, 1000);
-
-            } catch (e) { console.error("Ticker fetch error:", e); }
+                document.getElementById('marketTickerContainer').innerHTML = html;
+            } catch (e) { console.error(e); }
         }
-
-        // हर 8 सेकंड में बैकग्राउंड में अपने-आप रिफ्रेश होगा (बिना स्क्रीन रीलोड किए)
-        setInterval(fetchMarketTicker, 8000);
+        setInterval(fetchMarketTicker, 15000);
         fetchMarketTicker();
 
         function toggleModeInputs() {
@@ -594,7 +555,7 @@
             const travel_style = document.getElementById('travelStyleInput').value;
             const risk_tier = document.getElementById('riskTierInput').value;
 
-            showLoading("Gemini AI is analyzing live yFinance market data...");
+            showLoading("Calculating your custom strategy in ₹ INR...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -612,8 +573,8 @@
                 document.getElementById('resGoal').innerText = data.goal_identified;
                 document.getElementById('riskBadge').innerText = data.risk_profile;
                 document.getElementById('styleBadge').innerText = `Style: ${data.travel_style}`;
-                document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years (${data.expected_rate_annual} CAGR)`;
-                document.getElementById('resRationale').innerHTML = `<strong>AI Market Rationale:</strong> ${data.ai_rationale}`;
+                document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years Tenure`;
+                document.getElementById('resRationale').innerText = data.ai_rationale;
                 document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
                 document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
 
@@ -623,9 +584,9 @@
                     tbody.innerHTML += `
                         <tr>
                             <td><strong>${k.replace(/_/g, ' ')}</strong></td>
-                            <td><span class="badge bg-primary-subtle text-primary border px-2 py-1">${v.pct}%</span></td>
+                            <td><span class="badge bg-secondary-subtle text-dark">${v.pct}%</span></td>
                             <td class="text-primary fw-bold">₹${v.amount.toLocaleString('en-IN')}</td>
-                            <td class="text-success fw-bold">₹${v.projected_return.toLocaleString('en-IN')}</td>
+                            <td class="text-success fw-bold">₹${v.projected_return.toLocaleString('en-IN')} <small class="text-muted">(${v.cagr})</small></td>
                         </tr>
                     `;
                 }
