@@ -15,7 +15,7 @@ except ImportError:
     GENAI_AVAILABLE = False
 
 app = Flask(__name__)
-app.secret_key = "omnivest_inr_rupees_2026"
+app.secret_key = "omnivest_ai_dynamic_market_2026"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
@@ -42,7 +42,7 @@ def ensure_global_csv():
         with open(GLOBAL_CSV_FILE, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([
-                "Record_ID", "Timestamp", "User", "Goal_Description",
+                "Record_ID", "Timestamp", "User", "Goal_Description", "Travel_Style", "Duration_Days",
                 "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
@@ -56,6 +56,8 @@ def append_to_csvs(username, record_id, timestamp, tx):
         time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp)),
         username,
         tx.get('goal'),
+        tx.get('travel_style', 'Standard'),
+        tx.get('duration_days', 7),
         tx.get('monthly_investment'),
         tx.get('target_savings_goal'),
         tx.get('tenure_years'),
@@ -77,7 +79,7 @@ def append_to_csvs(username, record_id, timestamp, tx):
         writer = csv.writer(f)
         if not file_exists:
             writer.writerow([
-                "Record_ID", "Timestamp", "User", "Goal_Description",
+                "Record_ID", "Timestamp", "User", "Goal_Description", "Travel_Style", "Duration_Days",
                 "Monthly_SIP_INR", "Target_Corpus_INR", "Tenure_Years", "Projected_Maturity_INR",
                 "Stocks_Pct", "Mutual_Funds_Pct", "Real_Estate_Pct", "Gold_Pct", "Crypto_BTC_Pct",
                 "Risk_Level"
@@ -94,41 +96,99 @@ def load_ledger():
 def save_ledger(ledger):
     with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
+def parse_duration_in_days(text):
+    """Reliably extracts duration from user statement text."""
+    text = text.lower()
+    day_match = re.search(r'(\d+)\s*(?:day|days)', text)
+    week_match = re.search(r'(\d+)\s*(?:week|weeks)', text)
+    month_match = re.search(r'(\d+)\s*(?:month|months)', text)
+
+    if day_match:
+        return max(int(day_match.group(1)), 1)
+    elif week_match:
+        return max(int(week_match.group(1)) * 7, 1)
+    elif month_match:
+        return max(int(month_match.group(1)) * 30, 1)
+    return 7  # Default fallback if duration isn't mentioned
+
+def fetch_live_market_summary():
+    tickers = {
+        "Bitcoin": "BTC-INR",
+        "NIFTY_50": "^NSEI",
+        "Gold": "GC=F",
+        "BSE_Sensex": "^BSESN"
+    }
+    summary = {}
+    for name, sym in tickers.items():
+        try:
+            t = yf.Ticker(sym)
+            df = t.history(period="2d")
+            if len(df) >= 1:
+                cur = float(df['Close'].iloc[-1])
+                prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
+                chg = round(((cur - prev) / prev) * 100, 2)
+                summary[name] = {"price": round(cur, 2), "change_pct": chg}
+            else:
+                summary[name] = {"price": 0.0, "change_pct": 0.0}
+        except Exception:
+            summary[name] = {"price": 0.0, "change_pct": 0.0}
+    return summary
+
 # ==========================================
-# AI ESTIMATION & ADAPTIVE ALLOCATION (INR)
+# AI DYNAMIC PORTFOLIO ALLOCATION
 # ==========================================
-def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus):
+def call_ai_financial_planner(intent_text, tenure_years, duration_days, mode, budget_or_corpus, travel_style, risk_tier, market_snapshot):
     if not (GENAI_AVAILABLE and GEMINI_API_KEY):
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = f"""
-You are an expert financial planning AI. Analyze this travel and wealth goal for an Indian investor using Indian Rupees (₹ / INR):
-User Query: "{intent_text}"
-Mode: {mode} (goal = user stated destination/trip, budget = monthly budget in INR, corpus = target payout in INR)
-Provided Value in INR: {budget_or_corpus}
-Tenure in Years: {tenure_years}
+You are an advanced quantitative financial advisor and travel cost estimator.
+The investor is based in India and all monetary figures are in Indian Rupees (₹ / INR).
 
-Tasks:
-1. If mode is 'goal', estimate realistic expenses in Indian Rupees (₹):
-   - Identify destination country/city and duration.
-   - Estimate flights from India + accommodation/daily expenses in INR.
-   - Adjust for 4% yearly travel inflation over {tenure_years} years + a 10% safety buffer.
-   - Output estimated final target corpus in INR (₹).
-2. If mode is 'budget', compute expected maturity based on provided monthly INR savings.
-3. If mode is 'corpus', target that exact corpus in INR.
-4. Dynamically allocate asset weights based on tenure:
-   - Short tenures (< 2 yrs): LOW crypto (0-5%) for stability.
-   - Long tenures (>= 3 yrs): 10-25% crypto for higher capital growth.
-   - Ensure pct values of Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC SUM EXACTLY TO 100.
+Current Live Market Conditions (yFinance):
+{json.dumps(market_snapshot, indent=2)}
 
-Return strictly raw JSON format (no markdown fences, no backticks):
+User Goals & Input Parameters:
+- Statement: "{intent_text}"
+- Extracted Duration: {duration_days} DAYS (CRITICAL: Scale expenses directly by this number of days)
+- Planning Mode: {mode} (goal = trip planning, budget = monthly budget, corpus = target payout)
+- Input Value: {budget_or_corpus}
+- Tenure: {tenure_years} years
+- Travel Comfort Style: {travel_style} (budget, mid, or luxury)
+- Risk Profile: {risk_tier} (low, mid, or high)
+
+MANDATORY COST CALCULATION FORMULA (For mode == 'goal'):
+1. Flight Cost (Round-trip from India): One-time fixed cost for the destination.
+2. Per-Day Living Cost (Hotel/Stay + Food + Local Transit + Sightseeing):
+   - Budget: Minimal hostels, local transit, street/casual food.
+   - Mid-range: 3-4 star hotels, city transit, casual dining, entry tickets.
+   - Luxury: 4-5 star hotels, private cabs, fine dining.
+3. Base Cost = Flight Cost + (Per-Day Living Cost * {duration_days} days).
+   * Notice: 100 days MUST cost vastly more than 10 days because accommodation and food multiply by {duration_days}.
+4. Final Target Corpus = Base Cost * ((1 + 0.04) ** {tenure_years}) * 1.10 (4% annual inflation + 10% safety buffer).
+
+ASSET ALLOCATION INSTRUCTIONS:
+- Evaluate live market snapshot and the selected risk preference ('{risk_tier}').
+- Decide percentage weights for:
+  * Stock_Market_Index
+  * Mutual_Funds
+  * Real_Estate_REITs
+  * Gold_Precious_Metals
+  * Cryptocurrency_BTC
+  (Sum of these 5 percentages MUST EQUAL EXACTLY 100).
+- Estimate realistic portfolio annual CAGR (e.g. 0.08 to 0.18) based on your custom mix.
+
+Return strictly raw JSON format (no markdown, no backticks):
 {{
-  "destination_title": "string",
+  "destination_title": "string (e.g., '{duration_days}-Day Netherlands Trip')",
   "target_corpus": number,
-  "ai_rationale": "string explanation of pricing and asset allocation in INR",
-  "risk_profile": "Conservative / Balanced / Aggressive High-Yield",
+  "daily_cost_inr": number,
+  "flight_cost_inr": number,
+  "expected_annual_rate": number,
+  "risk_profile_description": "string",
+  "ai_rationale": "Detail the flight cost, per-day cost * {duration_days} days, inflation, and rationale for asset distribution",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -145,11 +205,11 @@ Return strictly raw JSON format (no markdown fences, no backticks):
         )
         return json.loads(response.text)
     except Exception as e:
-        print(f"AI Model Error: {e}")
+        print(f"Gemini AI Dynamic Error: {e}")
         return None
 
 # ==========================================
-# API ROUTES
+# API ENDPOINTS
 # ==========================================
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
@@ -159,15 +219,12 @@ def get_market_prices():
         "Gold (per 10g)": "GC=F",
         "BSE SENSEX": "^BSESN"
     }
-    
-    # Accurate INR fallbacks
     fallbacks = {
         "Bitcoin (BTC)": {"price": 6250000.0, "change": 1.45, "status": "up"},
         "NIFTY 50": {"price": 25200.0, "change": 0.40, "status": "up"},
         "Gold (per 10g)": {"price": 78500.0, "change": -0.25, "status": "down"},
         "BSE SENSEX": {"price": 82100.0, "change": 0.35, "status": "up"}
     }
-
     live_data = {}
     for name, symbol in tickers.items():
         try:
@@ -176,14 +233,13 @@ def get_market_prices():
             if len(df) >= 1:
                 cur = float(df['Close'].iloc[-1])
                 prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
-                chg = ((cur - prev) / prev) * 100
-                live_data[name] = {"price": round(cur, 2), "change": round(chg, 2), "status": "up" if chg >= 0 else "down"}
+                chg = round(((cur - prev) / prev) * 100, 2)
+                live_data[name] = {"price": round(cur, 2), "change": chg, "status": "up" if chg >= 0 else "down"}
             else:
                 live_data[name] = fallbacks[name]
         except Exception:
             live_data[name] = fallbacks[name]
-            
-    return jsonify({"status": "success", "market": live_data})
+    return jsonify({"status": "success", "market": live_data, "server_time": time.time()})
 
 @app.route('/')
 def home():
@@ -197,7 +253,7 @@ def auth():
     phone = data.get('phone', '').strip()
 
     if not username or not phone:
-        return jsonify({"status": "error", "message": "Username and phone number are required."}), 400
+        return jsonify({"status": "error", "message": "Username and phone are required."}), 400
 
     if role == 'admin':
         if username.lower() == 'admin' and phone == '0000000000':
@@ -233,75 +289,89 @@ def current_session():
 def analyze():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}
-    
+
     mode = data.get('mode', 'goal')
     years = max(int(data.get('years', 3)), 1)
     statement = data.get('statement', '').strip()
     input_val = float(data.get('input_val', 0) or 0)
+    travel_style = data.get('travel_style', 'mid')
+    risk_tier = data.get('risk_tier', 'mid')
 
-    ai_result = call_ai_financial_planner(statement, years, mode, input_val)
+    duration_days = parse_duration_in_days(statement) if mode == 'goal' else 7
+    market_snapshot = fetch_live_market_summary()
+
+    # Call AI with explicit duration_days
+    ai_result = call_ai_financial_planner(
+        statement, years, duration_days, mode, input_val, travel_style, risk_tier, market_snapshot
+    )
 
     if ai_result:
-        goal_title = ai_result.get("destination_title", statement)
+        goal_title = ai_result.get("destination_title", f"{duration_days}-Day Trip")
         target_corpus = float(ai_result.get("target_corpus", 250000))
-        ai_rationale = ai_result.get("ai_rationale", "AI calculated based on destination costs and duration in INR.")
-        risk_profile = ai_result.get("risk_profile", "AI Optimized Growth Strategy")
+        ai_rationale = ai_result.get("ai_rationale", "")
+        risk_profile = ai_result.get("risk_profile_description", f"AI Custom {risk_tier.capitalize()} Strategy")
         allocation = ai_result.get("allocation_pcts", {})
+        expected_rate = float(ai_result.get("expected_annual_rate", 0.125))
     else:
-        # Heuristic fallback in Indian Rupees
-        goal_title = statement if statement else "Wealth Target"
+        # Robust duration-scaling fallback
+        rate_map = {"low": 0.085, "mid": 0.125, "high": 0.160}
+        expected_rate = rate_map.get(risk_tier, 0.125)
+        risk_profile = f"Market-Calibrated {risk_tier.capitalize()} Risk Strategy"
+
         if mode == 'goal':
-            is_budget = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
-            base_inr = 85000 if is_budget else 320000
-            target_corpus = round(base_inr * ((1.04) ** years) * 1.15, 2)
+            is_budget_dest = any(c in statement.lower() for c in ["nepal", "thailand", "vietnam", "sri lanka", "bali", "kathmandu"])
+            flight_cost = 25000 if is_budget_dest else 65000
+
+            style_daily_map = {
+                "budget": 2500 if is_budget_dest else 6000,
+                "mid": 4500 if is_budget_dest else 12000,
+                "luxury": 9000 if is_budget_dest else 25000
+            }
+            daily_cost = style_daily_map.get(travel_style, 12000)
+
+            # Linear daily scaling: 100 days costs significantly more than 10 days!
+            base_trip_cost = flight_cost + (daily_cost * duration_days)
+            target_corpus = round(base_trip_cost * ((1.04) ** years) * 1.10, 2)
+            goal_title = f"{duration_days}-Day Journey"
+            ai_rationale = f"Calculated with ₹{flight_cost:,} flight + (₹{daily_cost:,}/day × {duration_days} days) over {years} yrs with 4% inflation."
         elif mode == 'budget':
-            target_corpus = round(max(input_val, 5000) * 12 * years * 1.35, 2)
+            target_corpus = round(max(input_val, 5000) * 12 * years * (1 + expected_rate), 2)
+            goal_title = "Monthly Wealth Accumulator"
+            ai_rationale = f"Based on monthly savings of ₹{input_val:,.0f} compounding at {expected_rate*100:.1f}%."
         else:
             target_corpus = max(input_val, 100000)
+            goal_title = "Target Corpus Goal"
+            ai_rationale = f"Target corpus of ₹{target_corpus:,.0f} over {years} years."
 
-        ai_rationale = f"Calculated using Indian travel inflation rates and {years}-year compounding."
-        risk_profile = "Balanced Compound Growth"
-
-        crypto_pct = 5.0 if years <= 1 else (15.0 if years <= 3 else 25.0)
         allocation = {
-            "Stock_Market_Index": 40.0,
-            "Cryptocurrency_BTC": crypto_pct,
-            "Mutual_Funds": 20.0 - (crypto_pct - 5.0),
-            "Real_Estate_REITs": 20.0,
-            "Gold_Precious_Metals": 15.0
-        }
+            "low": {"Stock_Market_Index": 20.0, "Mutual_Funds": 40.0, "Real_Estate_REITs": 20.0, "Gold_Precious_Metals": 20.0, "Cryptocurrency_BTC": 0.0},
+            "mid": {"Stock_Market_Index": 40.0, "Mutual_Funds": 25.0, "Real_Estate_REITs": 15.0, "Gold_Precious_Metals": 15.0, "Cryptocurrency_BTC": 5.0},
+            "high": {"Stock_Market_Index": 45.0, "Mutual_Funds": 15.0, "Real_Estate_REITs": 10.0, "Gold_Precious_Metals": 10.0, "Cryptocurrency_BTC": 20.0}
+        }.get(risk_tier)
 
-    expected_rate = 0.145
+    # Monthly SIP Annuity Formula
     r = expected_rate / 12
     n = years * 12
     monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
     total_invested = round(monthly_sip * n, 2)
 
-    cagr_map = {
-        "Stock_Market_Index": 15.0,
-        "Cryptocurrency_BTC": 22.0,
-        "Mutual_Funds": 12.5,
-        "Real_Estate_REITs": 11.0,
-        "Gold_Precious_Metals": 9.5
-    }
-
     portfolio_detailed = {}
     for asset, pct in allocation.items():
         pct_val = float(pct)
         allocated_principal = round(total_invested * (pct_val / 100.0), 2)
-        cagr = cagr_map.get(asset, 12.0)
-        projected_return = round(allocated_principal * ((1 + (cagr/100.0)) ** years), 2)
+        projected_return = round(allocated_principal * ((1 + expected_rate) ** years), 2)
         portfolio_detailed[asset] = {
             "pct": pct_val,
             "amount": allocated_principal,
-            "projected_return": projected_return,
-            "cagr": f"{cagr}%"
+            "projected_return": projected_return
         }
 
     return jsonify({
         "status": "success",
         "data": {
             "goal_identified": goal_title,
+            "travel_style": travel_style.capitalize(),
+            "duration_days": duration_days,
             "risk_profile": risk_profile,
             "tenure_years": years,
             "monthly_allocation": monthly_sip,
@@ -319,13 +389,15 @@ def analyze():
 def execute():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     data = request.json or {}; plan = data.get('plan', {}); u = session['user']
-    
+
     ledger = load_ledger()
     record_id = len(ledger) + 1
     tx = {
         "record_id": record_id,
         "user": u,
         "goal": plan.get('goal_identified'),
+        "travel_style": plan.get('travel_style', 'Standard'),
+        "duration_days": plan.get('duration_days', 7),
         "monthly_investment": plan.get('monthly_allocation'),
         "target_savings_goal": plan.get('target_savings_goal'),
         "target_fund": plan.get('estimated_maturity_value'),
