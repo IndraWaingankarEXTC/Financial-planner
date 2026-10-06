@@ -3,125 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Fun & Smart Wealth Planner 🎈</title>
+    <title>OmniVest | Fun & Colorful Wealth Planner 🎈</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Friendly rounded Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-canvas: #f0f7ff;
+            --bg-canvas: #f8faff;
             --surface-card: #ffffff;
-            --primary-soft: #4f46e5;
-            --primary-hover: #4338ca;
+            --primary-indigo: #6366f1;
             --accent-mint: #10b981;
-            --accent-sunny: #f59e0b;
-            --accent-rose: #f43f5e;
+            --accent-mango: #f59e0b;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
             --text-dark: #1e293b;
             --text-muted: #64748b;
-            --card-radius: 24px;
-            --button-radius: 18px;
+            --card-radius: 26px;
+            --button-radius: 20px;
         }
 
         body {
-            background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 50%, #fdf2f8 100%);
+            background: radial-gradient(circle at 10% 20%, #fdf4ff 0%, #eff6ff 40%, #ecfdf5 90%);
             min-height: 100vh;
             color: var(--text-dark);
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             overflow-x: hidden;
         }
 
-        /* Playful Card Design */
+        /* Colorful Custom Cards */
         .card-custom {
             background: var(--surface-card);
-            border: 2px solid #e2e8f0;
+            border: 3px solid #e0e7ff;
             border-radius: var(--card-radius);
-            box-shadow: 0 12px 24px -8px rgba(99, 102, 241, 0.08);
+            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.12);
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
-
         .card-custom:hover {
-            box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.14);
+            box-shadow: 0 22px 35px -8px rgba(99, 102, 241, 0.18);
         }
 
-        /* Ticker Pill */
+        /* Gradient Stat Boxes */
+        .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
+        .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
+        .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
+        .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
+
+        /* Market Ticker Bar */
         .market-ticker-bar {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border-bottom: 2px solid #e2e8f0;
-            font-size: 0.88rem;
+            border-bottom: 2px dashed #cbd5e1;
+            font-size: 0.9rem;
             white-space: nowrap;
             overflow-x: auto;
         }
         .ticker-pill {
             display: inline-flex;
             align-items: center;
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
             border-radius: 30px;
-            padding: 4px 14px;
+            padding: 5px 16px;
             margin: 4px 6px;
-            font-weight: 600;
-        }
-        .text-up { color: var(--accent-mint); font-weight: 700; }
-        .text-down { color: var(--accent-rose); font-weight: 700; }
-
-        /* Bouncy Buttons */
-        .btn-brand {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: #fff;
             font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .text-up { color: var(--accent-mint); font-weight: 800; }
+        .text-down { color: var(--accent-pink); font-weight: 800; }
+
+        /* Rainbow & Pastel Buttons */
+        .btn-brand {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            color: #fff;
+            font-weight: 800;
             border-radius: var(--button-radius);
             border: none;
-            padding: 12px 20px;
-            box-shadow: 0 6px 14px -3px rgba(79, 70, 229, 0.4);
+            padding: 14px 22px;
+            box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.45);
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .btn-brand:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 20px -4px rgba(79, 70, 229, 0.5);
+            box-shadow: 0 14px 24px -4px rgba(139, 92, 246, 0.55);
             color: #fff;
-        }
-        .btn-brand:active {
-            transform: translateY(1px) scale(0.98);
         }
 
         .btn-confirm-deal {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
             border-radius: var(--button-radius);
             border: none;
-            box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.45);
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .btn-confirm-deal:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 22px -4px rgba(16, 185, 129, 0.5);
+            box-shadow: 0 14px 26px -4px rgba(16, 185, 129, 0.55);
             color: #fff;
         }
 
         /* Form Inputs */
         .form-control, .form-select {
-            border-radius: 16px;
-            border: 2px solid #e2e8f0;
-            padding: 12px 16px;
+            border-radius: 18px;
+            border: 2px solid #cbd5e1;
+            padding: 12px 18px;
             font-weight: 600;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: #fdfdfd;
+            transition: all 0.2s;
         }
         .form-control:focus, .form-select:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+            border-color: #8b5cf6;
+            background-color: #fff;
+            box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.2);
         }
 
-        /* Animated Loading Overlay */
+        /* Loading Screen Animation */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
@@ -134,45 +139,51 @@
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
         .bouncing-piggy {
-            font-size: 3.5rem;
-            animation: bounce 0.8s infinite alternate ease-in-out;
+            font-size: 4rem;
+            animation: bounce 0.7s infinite alternate ease-in-out;
         }
         @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-20px); }
+            from { transform: translateY(0) scale(1); }
+            to { transform: translateY(-22px) scale(1.05); }
         }
 
-        /* Tab Switcher */
+        /* Pill Tabs */
+        .nav-pills {
+            background: #eef2ff;
+            padding: 6px;
+            border-radius: 22px;
+        }
         .nav-pills .nav-link {
-            border-radius: 16px;
+            border-radius: 18px;
             font-weight: 700;
-            color: var(--text-muted);
-            padding: 10px 18px;
+            color: #64748b;
+            padding: 10px 20px;
             transition: all 0.2s;
         }
         .nav-pills .nav-link.active {
-            background-color: var(--primary-soft);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff !important;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.35);
         }
 
-        /* Portfolio item cards */
+        /* Portfolio Cards */
         .portfolio-bubble {
             border: 2px solid #e2e8f0;
-            border-radius: 20px;
+            border-radius: 22px;
             background: #ffffff;
             cursor: pointer;
             transition: all 0.25s ease;
         }
         .portfolio-bubble:hover {
-            border-color: #6366f1;
+            border-color: #8b5cf6;
             transform: translateY(-2px);
-            box-shadow: 0 8px 18px -4px rgba(99, 102, 241, 0.12);
+            box-shadow: 0 10px 20px -4px rgba(139, 92, 246, 0.15);
         }
         .expanded-details {
-            background: #f8fafc;
-            border-radius: 14px;
-            padding: 12px;
+            background: #f8faff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 14px;
             margin-top: 12px;
             display: none;
         }
@@ -180,24 +191,27 @@
 </head>
 <body>
 
-    <!-- Playful Loading Overlay -->
+    <!-- Playful Loading Screen -->
     <div id="loadingOverlay">
         <div class="bouncing-piggy mb-2">🐷</div>
-        <h4 class="fw-bolder text-dark" id="loadingText">Counting your future coins...</h4>
-        <p class="text-muted small">Optimizing high-growth assets & calculating inflation...</p>
+        <h3 class="fw-bolder text-dark" id="loadingText">Counting your future coins...</h3>
+        <p class="text-muted fw-bold">Optimizing growth & preparing your plan!</p>
     </div>
 
     <!-- Live Market Strip -->
-    <div class="market-ticker-bar py-1" id="marketTickerContainer">
-        <div class="container text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-2"></i> Fetching live market quotes...</div>
+    <div class="market-ticker-bar py-2" id="marketTickerContainer">
+        <div class="container text-center text-muted py-1 fw-bold">
+            <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i> Connecting to live markets...
+        </div>
     </div>
 
     <!-- Top Navigation -->
-    <nav class="navbar py-3 mb-3">
+    <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-3 text-dark d-flex align-items-center">
-                <span class="p-2 rounded-circle bg-white shadow-sm me-2">🚀</span> OmniVest
-                <span class="badge rounded-pill bg-light text-primary border border-primary-subtle ms-2 fs-6">Wealth & Travel</span>
+                <span class="p-2 rounded-4 bg-white shadow-sm me-2 border">🚀</span> 
+                <span style="background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">OmniVest</span>
+                <span class="badge rounded-pill bg-warning text-dark ms-2 fs-6 shadow-sm">Super Fun ✨</span>
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -209,188 +223,193 @@
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
-                        <div class="display-6 mb-2">🎈</div>
-                        <h4 class="fw-bold">Welcome aboard!</h4>
-                        <p class="text-muted small">Choose your login mode to open your vault.</p>
+                        <div class="display-5 mb-2">🎉</div>
+                        <h3 class="fw-bold">Welcome Friend!</h3>
+                        <p class="text-muted small fw-semibold">Sign in to start planning your next big journey!</p>
                     </div>
 
-                    <ul class="nav nav-pills nav-fill mb-4" id="loginTabs" role="tablist">
-                        <li class="nav-item">
-                            <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button"><i class="fa-solid fa-user me-1"></i> Customer</button>
+                    <!-- Cleaned Navigation Tabs -->
+                    <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button" role="tab" aria-controls="customerPane" aria-selected="true">
+                                <i class="fa-solid fa-user me-1"></i> Customer Login
+                            </button>
                         </li>
-                        <li class="nav-item">
-                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#adminPane" type="button"><i class="fa-solid fa-shield-cat me-1"></i> Admin</button>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#adminPane" type="button" role="tab" aria-controls="adminPane" aria-selected="false">
+                                <i class="fa-solid fa-shield-cat me-1"></i> Admin Portal
+                            </button>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="loginTabContent">
-                        <!-- Customer Pane -->
-                        <div class="tab-pane fade show active" id="customerPane">
+                        <!-- Customer Pane (Strictly Default) -->
+                        <div class="tab-pane fade show active" id="customerPane" role="tabpanel" aria-labelledby="customer-tab">
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">What's your name?</label>
-                                <input type="text" id="custName" class="form-control" placeholder="e.g. Maya">
+                                <label class="form-label small fw-bold text-dark">👤 Your Full Name</label>
+                                <input type="text" id="custName" class="form-control" placeholder="e.g. Maya Sharma">
                             </div>
                             <div class="mb-4">
-                                <label class="form-label small fw-bold text-muted">Phone Number</label>
+                                <label class="form-label small fw-bold text-dark">📱 Phone Number</label>
                                 <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
                             </div>
                             <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
-                                Jump In! 🚀
+                                Start My Adventure! 🌟
                             </button>
                         </div>
 
                         <!-- Admin Pane -->
-                        <div class="tab-pane fade" id="adminPane">
-                            <div class="p-3 rounded-4 bg-light border border-info mb-3 small">
-                                <strong>Admin Key Hint:</strong><br>
+                        <div class="tab-pane fade" id="adminPane" role="tabpanel" aria-labelledby="admin-tab">
+                            <div class="p-3 rounded-4 bg-light border border-2 border-primary-subtle mb-3 small">
+                                <strong class="text-primary">🔑 Admin Master Access:</strong><br>
                                 Username: <code>admin</code><br>
-                                Key / Phone: <code>0000000000</code>
+                                Passkey: <code>0000000000</code>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Admin Name</label>
+                                <label class="form-label small fw-bold text-dark">Admin Username</label>
                                 <input type="text" id="adminName" class="form-control" value="admin">
                             </div>
                             <div class="mb-4">
-                                <label class="form-label small fw-bold text-muted">Master Key</label>
+                                <label class="form-label small fw-bold text-dark">Admin Passkey</label>
                                 <input type="text" id="adminPhone" class="form-control" value="0000000000">
                             </div>
-                            <button class="btn btn-dark w-100 py-3 rounded-4 fw-bold" onclick="handleLogin('admin')">
-                                Open Master Console 🔐
+                            <button class="btn btn-dark w-100 py-3 rounded-4 fw-bold shadow" onclick="handleLogin('admin')">
+                                Open Master Vault 🔐
                             </button>
                         </div>
                     </div>
 
-                    <div id="authError" class="alert alert-danger mt-3 py-2 small rounded-3" style="display:none;"></div>
+                    <div id="authError" class="alert alert-danger mt-3 py-2 small rounded-4 fw-bold" style="display:none;"></div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
-            <!-- Stats Bar -->
+            <!-- Colorful Stat Bubbles -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
-                    <div class="card-custom p-3 text-center">
-                        <small class="text-muted fw-bold">Active Goals</small>
-                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
+                    <div class="card-custom stat-box-1 p-3 text-center">
+                        <small class="text-primary fw-bold">🎯 Active Plans</small>
+                        <div class="fs-2 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card-custom p-3 text-center">
-                        <small class="text-muted fw-bold">Saved Money</small>
-                        <div class="fs-3 fw-extrabold text-primary mt-1" id="statPrincipal">$0</div>
+                    <div class="card-custom stat-box-2 p-3 text-center">
+                        <small class="text-success fw-bold">💰 Total Invested</small>
+                        <div class="fs-2 fw-extrabold text-success mt-1" id="statPrincipal">$0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card-custom p-3 text-center">
-                        <small class="text-muted fw-bold">Expected Growth</small>
-                        <div class="fs-3 fw-extrabold text-success mt-1" id="statGain">+$0</div>
+                    <div class="card-custom stat-box-3 p-3 text-center">
+                        <small class="text-warning-emphasis fw-bold">📈 Total Profit</small>
+                        <div class="fs-2 fw-extrabold text-dark mt-1" id="statGain">+$0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card-custom p-3 text-center">
-                        <small class="text-muted fw-bold">Final Target</small>
-                        <div class="fs-3 fw-extrabold text-warning mt-1" id="statMaturity">$0</div>
+                    <div class="card-custom stat-box-4 p-3 text-center">
+                        <small class="text-danger fw-bold">🏆 Target Corpus</small>
+                        <div class="fs-2 fw-extrabold text-danger mt-1" id="statMaturity">$0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Planner & Result -->
+            <!-- Main Planner & Breakdown -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-5">
-                    <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <span class="me-2">🎨</span> Let's Plan Your Goal
-                        </h5>
+                    <div class="card-custom p-4 h-100" style="background: linear-gradient(180deg, #ffffff 0%, #fdf4ff 100%);">
+                        <h4 class="fw-bold mb-3 d-flex align-items-center text-dark">
+                            <span class="me-2">🎨</span> Craft Your Goal
+                        </h4>
 
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted">What type of plan do you want?</label>
-                            <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
+                            <label class="form-label small fw-bold text-muted">Select Strategy Mode</label>
+                            <select id="planningMode" class="form-select border-2" onchange="toggleModeInputs()">
                                 <option value="goal">Dream Goal & Trip Duration (e.g. Italy for 10 days)</option>
-                                <option value="budget">Fixed Monthly Savings Budget</option>
-                                <option value="corpus">Exact Final Target Amount</option>
+                                <option value="budget">Monthly Willingness to Save</option>
+                                <option value="corpus">Fixed Payout Target Amount</option>
                             </select>
                         </div>
 
                         <div class="mb-3" id="inputContainer">
-                            <label class="form-label small fw-bold text-muted">Where do you want to go & for how long?</label>
+                            <label class="form-label small fw-bold text-muted">Destination & Stay Length</label>
                             <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Italy for 10 days in 3 years.</textarea>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted">Years to save (Tenure)</label>
+                            <label class="form-label small fw-bold text-muted">Years to Grow (Tenure)</label>
                             <input type="number" id="yearsInput" class="form-control" value="3">
                         </div>
 
                         <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
-                            Calculate My Money Plan ✨
+                            Calculate Maximum Returns ✨
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
-                    <div class="card-custom p-4 h-100">
-                        <h5 class="fw-bold mb-3 d-flex align-items-center">
-                            <span class="me-2">📊</span> Your Smart Growth Plan
-                        </h5>
+                    <div class="card-custom p-4 h-100" style="background: linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%);">
+                        <h4 class="fw-bold mb-3 d-flex align-items-center text-dark">
+                            <span class="me-2">📊</span> Optimal Asset Split
+                        </h4>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
-                            <div class="fs-1 mb-2">💡</div>
-                            <p>Pick a goal on the left and tap <strong>Calculate</strong> to see how fast your money grows!</p>
+                            <div class="display-6 mb-2">💡</div>
+                            <p class="fw-semibold">Pick a destination or target on the left and tap <strong>Calculate</strong> to watch your money grow!</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">Optimal Growth</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2 fs-6">High Yield ⚡</span>
                             </div>
                             <p class="small text-muted mb-3" id="resRationale"></p>
 
                             <div class="row g-2 text-center mb-3">
                                 <div class="col-6">
-                                    <div class="p-3 border rounded-4 bg-light">
-                                        <small class="text-muted fw-bold">Save Monthly</small>
-                                        <div class="fs-4 fw-bold text-primary" id="resMonthlySip">--</div>
+                                    <div class="p-3 rounded-4 bg-white border border-2 border-primary-subtle shadow-sm">
+                                        <small class="text-muted fw-bold">Required Monthly SIP</small>
+                                        <div class="fs-4 fw-extrabold text-primary" id="resMonthlySip">--</div>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 border rounded-4 bg-light">
-                                        <small class="text-muted fw-bold">Final Pot of Gold</small>
-                                        <div class="fs-4 fw-bold text-success" id="resTargetCorpus">--</div>
+                                    <div class="p-3 rounded-4 bg-white border border-2 border-success-subtle shadow-sm">
+                                        <small class="text-muted fw-bold">Target Final Pot</small>
+                                        <div class="fs-4 fw-extrabold text-success" id="resTargetCorpus">--</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="table-responsive mb-3">
-                                <table class="table table-sm align-middle" style="font-size: 0.88rem;">
+                                <table class="table table-sm align-middle" style="font-size: 0.9rem;">
                                     <thead>
                                         <tr class="text-muted">
                                             <th>Bucket</th>
                                             <th>Share</th>
                                             <th>Principal</th>
-                                            <th>Projected Value</th>
+                                            <th>Est. Return</th>
                                         </tr>
                                     </thead>
                                     <tbody id="allotmentTableBody"></tbody>
                                 </table>
                             </div>
 
-                            <button id="btnCommit" class="btn btn-confirm-deal w-100 py-3 fw-bold" onclick="commitDeal()">
-                                <i class="fa-solid fa-heart me-2"></i> Fix & Start This Plan!
+                            <button id="btnCommit" class="btn btn-confirm-deal w-100 py-3 fw-bold fs-6" onclick="commitDeal()">
+                                <i class="fa-solid fa-circle-check me-2"></i> Confirm & Fix Investment Deal!
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Unified Records / Ledger -->
+            <!-- Ledger Records -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                    <h5 class="fw-bold mb-0 d-flex align-items-center">
-                        <span class="me-2">🗂️</span> <span id="ledgerTitleText">My Vault of Goals</span>
-                    </h5>
+                    <h4 class="fw-bold mb-0 d-flex align-items-center text-dark">
+                        <span class="me-2">🗂️</span> <span id="ledgerTitleText">My Saved Portfolios</span>
+                    </h4>
                     <a href="/api/export-csv" class="btn btn-sm btn-outline-success rounded-pill px-3 py-2 fw-bold" id="csvDownloadBtn">
-                        <i class="fa-solid fa-file-arrow-down me-1"></i> Download CSV Statement
+                        <i class="fa-solid fa-file-excel me-1"></i> Download CSV Statement
                     </a>
                 </div>
                 <div id="ledgerContainer" class="d-flex flex-column gap-3"></div>
@@ -417,10 +436,10 @@
                 let html = '<div class="container d-flex flex-wrap justify-content-center">';
                 for (const [key, data] of Object.entries(market)) {
                     const cls = data.status === 'up' ? 'text-up' : 'text-down';
-                    const icon = data.status === 'up' ? '↗' : '↘';
+                    const icon = data.status === 'up' ? '▲' : '▼';
                     html += `
                         <div class="ticker-pill">
-                            <span class="me-1">${key}:</span>
+                            <span class="me-2 text-secondary">${key}:</span>
                             <span class="text-dark me-2">$${data.price.toLocaleString()}</span>
                             <span class="${cls}">${icon} ${data.change}%</span>
                         </div>
@@ -438,17 +457,17 @@
             const container = document.getElementById('inputContainer');
             if (mode === 'goal') {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Where do you want to go & for how long?</label>
+                    <label class="form-label small fw-bold text-muted">Destination & Stay Length</label>
                     <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Italy for 10 days in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">How much can you save each month? ($)</label>
+                    <label class="form-label small fw-bold text-muted">Monthly Savings Willingness ($)</label>
                     <input type="number" id="statementInput" class="form-control" value="1000">
                 `;
             } else {
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">What is your dream total goal? ($)</label>
+                    <label class="form-label small fw-bold text-muted">Target Final Payout Goal ($)</label>
                     <input type="number" id="statementInput" class="form-control" value="50000">
                 `;
             }
@@ -464,7 +483,7 @@
                 phone = document.getElementById('custPhone').value.trim();
             }
 
-            showLoading("Signing you in... 🎈");
+            showLoading("Signing you in... ✨");
             try {
                 const res = await fetch('/api/auth', {
                     method: 'POST',
@@ -519,9 +538,9 @@
                     tbody.innerHTML += `
                         <tr>
                             <td><strong>${k.replace(/_/g, ' ')}</strong></td>
-                            <td>${v.pct}%</td>
-                            <td class="text-primary font-monospace">$${v.amount.toLocaleString()}</td>
-                            <td class="text-success font-monospace">$${v.projected_return.toLocaleString()} <small class="text-muted">(${v.cagr})</small></td>
+                            <td><span class="badge bg-secondary-subtle text-dark">${v.pct}%</span></td>
+                            <td class="text-primary fw-bold">$${v.amount.toLocaleString()}</td>
+                            <td class="text-success fw-bold">$${v.projected_return.toLocaleString()} <small class="text-muted">(${v.cagr})</small></td>
                         </tr>
                     `;
                 }
@@ -532,7 +551,7 @@
 
         async function commitDeal() {
             if (!activePlan) return;
-            showLoading("Securing your plan into the ledger... ✨");
+            showLoading("Locking your investment deal... 🎈");
             try {
                 const res = await fetch('/api/execute-investment', { 
                     method: 'POST', 
@@ -558,10 +577,10 @@
             
             if (sessionData.is_admin) {
                 document.getElementById('ledgerTitleText').innerText = "GLOBAL AUDIT VAULT (All Users)";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-arrow-down me-1"></i> Download Global Master CSV`;
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV`;
             } else {
-                document.getElementById('ledgerTitleText').innerText = "My Saved Goals";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-arrow-down me-1"></i> Download My CSV`;
+                document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Personal CSV`;
             }
 
             const res = await fetch('/api/my-ledger');
@@ -587,13 +606,13 @@
                                 <span class="badge rounded-pill bg-primary px-3 py-1">Plan #${item.record_id}</span>
                                 <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.user}</span>
                             </div>
-                            <small class="text-muted">${item.timestamp}</small>
+                            <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
-                        <h6 class="text-dark fw-bold mb-2">${tx.goal}</h6>
+                        <h5 class="text-dark fw-bold mb-2">${tx.goal}</h5>
                         <div class="row text-center g-2 my-1">
-                            <div class="col-4"><div class="p-2 rounded-3 bg-light"><small class="text-muted d-block">Monthly</small><strong class="text-primary">$${tx.monthly_investment}/mo</strong></div></div>
-                            <div class="col-4"><div class="p-2 rounded-3 bg-light"><small class="text-muted d-block">Target</small><strong class="text-success">$${tx.target_fund}</strong></div></div>
-                            <div class="col-4"><div class="p-2 rounded-3 bg-light"><small class="text-muted d-block">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
+                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Monthly SIP</small><strong class="text-primary">$${tx.monthly_investment}/mo</strong></div></div>
+                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Target Payout</small><strong class="text-success">$${tx.target_fund}</strong></div></div>
+                            <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
                         </div>
                         <div id="details_${item.record_id}" class="expanded-details small text-secondary">
                             <strong class="text-dark">Detailed Asset Split:</strong>
@@ -612,10 +631,10 @@
                 document.getElementById('dashboardView').style.display = 'block';
                 document.getElementById('navUserArea').innerHTML = `
                     <div class="d-flex align-items-center">
-                        <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2">
+                        <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
                             👋 Hi, ${data.user} ${data.is_admin ? '(Admin)' : ''}
                         </span>
-                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="logout()">Exit</button>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
                     </div>
                 `;
                 loadLedger();
