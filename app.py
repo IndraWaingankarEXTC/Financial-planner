@@ -119,39 +119,43 @@ def fetch_live_market_summary():
 
 def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier, market_snapshot):
     if not GENAI_AVAILABLE:
-        print("[OmniVest] google-genai library is missing.")
+        print("[OmniVest Error] 'google-genai' library is missing from the environment.")
         return None
 
+    # Retrieve and clean API key dynamically per request
     api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
     if not api_key:
-        print("[OmniVest] API key is missing.")
+        print("[OmniVest Error] GEMINI_API_KEY or GOOGLE_API_KEY is missing or empty.")
         return None
 
     try:
-        # Client configured with strict 12s timeout to prevent thread hanging
-        client = genai.Client(api_key=api_key, http_options={"timeout": 12.0})
+        # Client initialized cleanly without incompatible arguments
+        client = genai.Client(api_key=api_key)
 
         prompt = f"""
 You are an expert quantitative financial pricing intelligence engine. All figures are in INR (₹).
+
+Live Market Context:
+{json.dumps(market_snapshot, indent=2)}
 
 User Request:
 - Goal: "{intent_text}"
 - Mode: {mode}
 - Numeric Value: {budget_or_corpus}
 - Tenure: {tenure_years} years
-- Budget Scale: {budget_level}
-- Risk Level: {risk_tier}
+- Budget Scale: {budget_level} (Low Budget, Mid Budget, High Budget)
+- Risk Level: {risk_tier} (Low Risk, Mid Risk, High Risk)
 
 TASK:
-1. Identify the specific purchase, trip, or milestone.
-   - For an EV / Vehicle: select a real model in India matching {budget_level} and calculate on-road price.
-   - For a trip: identify flights from India and daily living costs converted to INR.
+1. Identify the specific purchase, trip, or milestone:
+   - For an EV / Vehicle: select a real model in India matching {budget_level} (e.g., Tiago EV / MG Comet for Low; Nexon EV / XUV400 for Mid; Ioniq 5 / BYD Seal for High) and determine realistic on-road price.
+   - For a trip: identify flights from India and daily living costs converted to INR based on destination and duration.
    - For general goals: calculate realistic baseline in INR.
-2. Compound present cost at 5% annual inflation over {tenure_years} years.
-3. Determine allocation percentages summing to 100 for: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
+2. Compound present cost at 5% annual inflation over {tenure_years} years: Target Corpus = Present Cost * ((1 + 0.05) ** {tenure_years}).
+3. Determine allocation percentages summing to exactly 100 for: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
 4. Estimate realistic portfolio CAGR (0.08 to 0.17).
 
-Return strictly JSON:
+Return strictly JSON without markdown code fences:
 {{
   "destination_title": "string",
   "target_corpus": number,
@@ -174,15 +178,19 @@ Return strictly JSON:
                 response = client.models.generate_content(
                     model=model_candidate,
                     contents=prompt,
-                    config=types.GenerateContentConfig(response_mime_type="application/json")
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json"
+                    )
                 )
                 if response and response.text:
+                    print(f"[OmniVest AI SUCCESS] Model '{model_candidate}' generated output.")
                     break
-            except Exception as e:
-                print(f"[OmniVest] Attempt with {model_candidate} failed: {e}")
+            except Exception as model_err:
+                print(f"[OmniVest Notice] Failed on {model_candidate}: {model_err}")
                 continue
 
         if not response or not response.text:
+            print("[OmniVest Error] All candidate models failed to return a response.")
             return None
 
         raw_text = response.text.strip()
@@ -191,7 +199,7 @@ Return strictly JSON:
         return json.loads(cleaned_text)
 
     except Exception as e:
-        print(f"[OmniVest Exception] {e}")
+        print(f"[OmniVest Critical Exception] {e}")
         return None
 
 # ==========================================
@@ -302,7 +310,7 @@ def analyze():
     n = years * 12
 
     if mode == 'budget':
-        # Constant SIP mode
+        # Fixed monthly investment value
         monthly_sip = max(input_val, 500.0)
         sip_growth_factor = (((1 + r)**n - 1) / r) * (1 + r)
         target_corpus = round(monthly_sip * sip_growth_factor, 2)
@@ -310,8 +318,9 @@ def analyze():
         goal_title = f"Monthly SIP Plan (₹{monthly_sip:,.0f}/mo)"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years. "
-                        f"At a projected CAGR of {expected_rate*100:.1f}%, accumulated value is ₹{target_corpus:,.0f}.")
+        ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years ({n} months). "
+                        f"At a projected {risk_tier.capitalize()} CAGR of {expected_rate*100:.1f}%, your wealth accumulates "
+                        f"to ₹{target_corpus:,.0f} (Net Gain: ₹{target_corpus - total_invested:,.0f}).")
 
     elif mode == 'corpus':
         # Target payout goal
@@ -322,7 +331,7 @@ def analyze():
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
         ai_rationale = (f"Target corpus of ₹{target_corpus:,.0f} in {years} years. "
-                        f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
+                        f"At {expected_rate*100:.1f}% annual CAGR, investing ₹{monthly_sip:,.0f}/month accumulates your goal.")
 
     else:
         # Dynamic AI Goal
@@ -339,7 +348,6 @@ def analyze():
             expected_rate = float(ai_result.get("expected_annual_rate", expected_rate))
             r = expected_rate / 12
         else:
-            # Informative fallback that doesn't pretend to be the prior calculation
             tier_cost = {"budget": 150000, "mid": 450000, "luxury": 1200000}.get(budget_level, 450000)
             target_corpus = round(tier_cost * ((1.05) ** years), 2)
             goal_title = statement if statement else "Custom Financial Goal"
