@@ -1,1 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniVest | AI Wealth Engine (INR)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
+    <style>
+        :root {
+            --surface-card: #ffffff;
+            --primary-indigo: #4f46e5;
+            --accent-mint: #10b981;
+            --accent-rose: #f43f5e;
+            --text-dark: #0f172a;
+            --card-radius: 24px;
+            --button-radius: 16px;
+        }
+
+        body {
+            background: radial-gradient(circle at 10% 20%, #fdf4ff 0%, #eff6ff 40%, #ecfdf5 90%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .card-custom {
+            background: var(--surface-card);
+            border: 2px solid #e0e7ff;
+            border-radius: var(--card-radius);
+            box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
+        .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
+        .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
+        .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
+
+        /* REAL-TIME MARKET TICKER */
+        .market-ticker-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .ticker-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            padding: 5px 16px;
+            margin: 4px 6px;
+            font-weight: 700;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .price-flash-up {
+            background: #dcfce7 !important;
+            transform: scale(1.04);
+        }
+        .price-flash-down {
+            background: #ffe4e6 !important;
+            transform: scale(1.04);
+        }
+
+        .text-up { color: var(--accent-mint); font-weight: 800; }
+        .text-down { color: var(--accent-rose); font-weight: 800; }
+
+        .btn-brand {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            color: #fff;
+            font-weight: 700;
+            border-radius: var(--button-radius);
+            border: none;
+            padding: 12px 20px;
+            box-shadow: 0 6px 18px -3px rgba(139, 92, 246, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-brand:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px -3px rgba(139, 92, 246, 0.5);
+            color: #fff;
+        }
+
+        .btn-confirm-deal {
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            color: #fff;
+            font-weight: 700;
+            border-radius: var(--button-radius);
+            border: none;
+            box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .form-control, .form-select {
+            border-radius: 14px;
+            border: 2px solid #cbd5e1;
+            padding: 10px 14px;
+            font-weight: 600;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
+
+        /* HARMONIZED LIGHT-THEMED LOGO STYLING */
+        .omnivest-logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            filter: drop-shadow(0 6px 14px rgba(34, 58, 94, 0.12));
+            transition: transform 0.25s ease;
+        }
+        .omnivest-logo-icon:hover {
+            transform: translateY(-1px) scale(1.04);
+        }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        #loadingOverlay.active { opacity: 1; visibility: visible; }
+
+        .currency-spread { display: flex; gap: 12px; margin-bottom: 20px; }
+        .currency-badge {
+            width: 54px; height: 54px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; color: white;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+            animation: floatCurrency 1.2s infinite alternate ease-in-out;
+        }
+        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); }
+        .curr-usd { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation-delay: 0.15s; }
+        .curr-eur { background: linear-gradient(135deg, #6366f1, #4338ca); animation-delay: 0.3s; }
+        .curr-yen { background: linear-gradient(135deg, #ec4899, #be185d); animation-delay: 0.45s; }
+        .curr-gbp { background: linear-gradient(135deg, #f59e0b, #d97706); animation-delay: 0.6s; }
+
+        @keyframes floatCurrency {
+            0% { transform: translateY(0) scale(0.95); }
+            100% { transform: translateY(-16px) scale(1.05); }
+        }
+
+        .nav-pills { background: #eef2ff; padding: 6px; border-radius: 20px; }
+        .nav-pills .nav-link { border-radius: 16px; font-weight: 700; color: #64748b; padding: 10px 18px; }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .portfolio-bubble {
+            border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .expanded-details {
+            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 12px; margin-top: 10px; display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">
+        <div class="currency-spread">
+            <div class="currency-badge curr-inr">₹</div>
+            <div class="currency-badge curr-usd">$</div>
+            <div class="currency-badge curr-eur">€</div>
+            <div class="currency-badge curr-yen">¥</div>
+            <div class="currency-badge curr-gbp">£</div>
+        </div>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Live Markets...</h4>
+        <p class="text-muted small fw-semibold">Consulting Gemini AI to derive optimal asset allocations...</p>
+    </div>
+
+    <!-- Live Ticker Bar -->
+    <div class="market-ticker-bar py-2" id="marketTickerContainer">
+        <div class="container text-center text-muted py-1 fw-bold">
+            <i class="fa-solid fa-circle text-success fa-fade me-2" style="font-size: 0.75rem;"></i> Connecting to market feeds...
+        </div>
+    </div>
+
+    <!-- CLEAN TOP NAVIGATION (Only OmniVest Logo & Brand Name) -->
+    <nav class="navbar py-3 mb-2">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand fw-extrabold fs-3 text-dark d-flex align-items-center mb-0">
+                <span class="omnivest-logo-icon me-2">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="navCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#2c4d79"/>
+                                <stop offset="100%" stop-color="#1e3557"/>
+                            </linearGradient>
+                            <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#10b981"/>
+                                <stop offset="100%" stop-color="#34d399"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="48" fill="url(#navCircleGrad)" stroke="#e2e8f0" stroke-width="2"/>
+                        <rect x="28" y="58" width="10" height="24" rx="5" fill="url(#barGrad)"/>
+                        <rect x="44" y="46" width="10" height="36" rx="5" fill="url(#barGrad)"/>
+                        <rect x="60" y="38" width="10" height="44" rx="5" fill="url(#barGrad)"/>
+                        <path d="M25 61 L58 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M47 25 L65 24 L62 42 Z" fill="#ffffff"/>
+                    </svg>
+                </span>
+                OmniVest
+            </span>
+            <div id="navUserArea"></div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <!-- Auth View -->
+        <div id="authView" class="row justify-content-center my-4">
+            <div class="col-md-5">
+                <div class="card-custom p-4 p-md-5">
+                    <!-- CLEAN LOGIN HEADER (Matching Aesthetic) -->
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <span class="omnivest-logo-icon">
+                                <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="loginCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stop-color="#2c4d79"/>
+                                            <stop offset="100%" stop-color="#1e3557"/>
+                                        </linearGradient>
+                                        <linearGradient id="loginBarGrad" x1="0" y1="1" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stop-color="#10b981"/>
+                                            <stop offset="100%" stop-color="#34d399"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="50" r="48" fill="url(#loginCircleGrad)" stroke="#cbd5e1" stroke-width="2"/>
+                                    <rect x="28" y="58" width="10" height="24" rx="5" fill="url(#loginBarGrad)"/>
+                                    <rect x="44" y="46" width="10" height="36" rx="5" fill="url(#loginBarGrad)"/>
+                                    <rect x="60" y="38" width="10" height="44" rx="5" fill="url(#loginBarGrad)"/>
+                                    <path d="M25 61 L58 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+                                    <path d="M47 25 L65 24 L62 42 Z" fill="#ffffff"/>
+                                </svg>
+                            </span>
+                        </div>
+                        <h3 class="fw-extrabold mb-1 text-dark">OmniVest</h3>
+                        <p class="text-success small fw-bold mb-2" style="font-size: 0.88rem; letter-spacing: 0.4px;">"Invest Today. Secure Tomorrow."</p>
+                        <p class="text-muted small">Sign in to access your portfolio management console.</p>
+                    </div>
+
+                    <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button" role="tab" aria-selected="true">
+                                <i class="fa-solid fa-user me-1"></i> Customer Login
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#adminPane" type="button" role="tab" aria-selected="false">
+                                <i class="fa-solid fa-shield-halved me-1"></i> Admin Portal
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="loginTabContent">
+                        <div class="tab-pane fade show active" id="customerPane" role="tabpanel">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Your Name</label>
+                                <input type="text" id="custName" class="form-control" placeholder="e.g. Maya Sharma">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-dark">Mobile Number</label>
+                                <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
+                            </div>
+                            <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
+                                Enter Console (INR)
+                            </button>
+                        </div>
+
+                        <div class="tab-pane fade" id="adminPane" role="tabpanel">
+                            <div class="p-3 rounded-3 bg-light border mb-3 small">
+                                <strong class="text-primary">Admin Access:</strong><br>
+                                Username: <code>admin</code><br>
+                                Passkey: <code>0000000000</code>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-dark">Admin Username</label>
+                                <input type="text" id="adminName" class="form-control" value="admin">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-dark">Passkey</label>
+                                <input type="text" id="adminPhone" class="form-control" value="0000000000">
+                            </div>
+                            <button class="btn btn-dark w-100 py-3 rounded-3 fw-bold" onclick="handleLogin('admin')">
+                                Open Admin Console
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="authError" class="alert alert-danger mt-3 py-2 small rounded-3 fw-bold" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboardView" style="display:none;">
+            <!-- Summary Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card-custom stat-box-1 p-3 text-center">
+                        <small class="text-primary fw-bold" id="statPortfoliosLabel">Active Plans</small>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom stat-box-2 p-3 text-center">
+                        <small class="text-success fw-bold" id="statPrincipalLabel">Invested Principal</small>
+                        <div class="fs-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom stat-box-3 p-3 text-center">
+                        <small class="text-warning-emphasis fw-bold" id="statGainLabel">Projected Profit</small>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statGain">+₹0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom stat-box-4 p-3 text-center">
+                        <small class="text-danger fw-bold" id="statMaturityLabel">Final Corpus</small>
+                        <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN NOTICE BANNER -->
+            <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Administrative Oversight Mode</h6>
+                        <span class="small text-secondary">
+                            You are reviewing all investor portfolios submitted across the platform. Investment planning tools are disabled for supervisory accounts.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMER-ONLY PLANNER SECTION -->
+            <div id="customerPlannerSection" class="row g-4 mb-4">
+                <div class="col-lg-5">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Strategy Mode</label>
+                            <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
+                                <option value="goal">Goal & Trip Destination</option>
+                                <option value="budget">Monthly Savings Willingness (₹)</option>
+                                <option value="corpus">Exact Target Corpus Amount (₹)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="travelStyleContainer">
+                            <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
+                            <select id="travelStyleInput" class="form-select border-primary-subtle">
+                                <option value="budget">Budget / Backpacker (Hostels, regional transport, local meals)</option>
+                                <option value="mid" selected>Mid-Range Standard (3-4 star stays, city transit, guided tours)</option>
+                                <option value="luxury">Luxury / Premium (5-star hotels, private transfers, fine dining)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
+                 
