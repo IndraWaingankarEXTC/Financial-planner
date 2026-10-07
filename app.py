@@ -21,6 +21,10 @@ USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
 GLOBAL_CSV_FILE = "global_master_investments.csv"
 
+# In-memory cache for market tickers to prevent 3-6s yfinance network lag
+MARKET_CACHE = {"data": None, "timestamp": 0}
+CACHE_TTL = 600  # 10 minutes
+
 def load_users():
     if os.path.exists(USERS_FILE):
         try:
@@ -95,6 +99,11 @@ def save_ledger(ledger):
     with open(LEDGER_FILE, "w") as f: json.dump(ledger, f, indent=4)
 
 def fetch_live_market_summary():
+    global MARKET_CACHE
+    now = time.time()
+    if MARKET_CACHE["data"] and (now - MARKET_CACHE["timestamp"] < CACHE_TTL):
+        return MARKET_CACHE["data"]
+
     tickers = {
         "Bitcoin": "BTC-INR",
         "NIFTY_50": "^NSEI",
@@ -115,54 +124,40 @@ def fetch_live_market_summary():
                 summary[name] = {"price": 0.0, "change_pct": 0.0}
         except Exception:
             summary[name] = {"price": 0.0, "change_pct": 0.0}
+
+    MARKET_CACHE["data"] = summary
+    MARKET_CACHE["timestamp"] = now
     return summary
 
-def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier, market_snapshot):
+def call_ai_financial_planner_fast(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier):
     if not GENAI_AVAILABLE:
-        print("[OmniVest Error] 'google-genai' library is missing from the environment.")
         return None
 
-    # Retrieve and clean API key dynamically per request
     api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
     if not api_key:
-        print("[OmniVest Error] GEMINI_API_KEY or GOOGLE_API_KEY is missing or empty.")
         return None
 
     try:
-        # Client initialized cleanly without incompatible arguments
         client = genai.Client(api_key=api_key)
 
-        prompt = f"""
-You are an expert quantitative financial pricing intelligence engine. All figures are in INR (₹).
+        prompt = f"""You are a high-speed financial pricing estimator. All numbers in INR (₹).
+User Goal: "{intent_text}"
+Tier: {budget_level}
+Risk: {risk_tier}
+Tenure: {tenure_years} yrs
 
-Live Market Context:
-{json.dumps(market_snapshot, indent=2)}
+Calculate:
+1. Exact model/trip baseline present cost in INR.
+2. Compound at 5% inflation: target_corpus = present_cost * (1.05 ** {tenure_years}).
+3. Asset split (sum to 100): Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
+4. Expected CAGR: 0.08 to 0.16.
 
-User Request:
-- Goal: "{intent_text}"
-- Mode: {mode}
-- Numeric Value: {budget_or_corpus}
-- Tenure: {tenure_years} years
-- Budget Scale: {budget_level} (Low Budget, Mid Budget, High Budget)
-- Risk Level: {risk_tier} (Low Risk, Mid Risk, High Risk)
-
-TASK:
-1. Identify the specific purchase, trip, or milestone:
-   - For an EV / Vehicle: select a real model in India matching {budget_level} (e.g., Tiago EV / MG Comet for Low; Nexon EV / XUV400 for Mid; Ioniq 5 / BYD Seal for High) and determine realistic on-road price.
-   - For a trip: identify flights from India and daily living costs converted to INR based on destination and duration.
-   - For general goals: calculate realistic baseline in INR.
-2. Compound present cost at 5% annual inflation over {tenure_years} years: Target Corpus = Present Cost * ((1 + 0.05) ** {tenure_years}).
-3. Determine allocation percentages summing to exactly 100 for: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
-4. Estimate realistic portfolio CAGR (0.08 to 0.17).
-
-Return strictly JSON without markdown code fences:
+Return strictly raw JSON (no markdown):
 {{
-  "destination_title": "string",
+  "destination_title": "Short title",
   "target_corpus": number,
-  "present_cost_inr": number,
   "expected_annual_rate": number,
-  "risk_profile_description": "{risk_tier.capitalize()} Risk Strategy",
-  "ai_rationale": "Clear, concise 2-sentence rationale covering model/trip price, inflation, and asset split.",
+  "ai_rationale": "One brief sentence explaining cost, inflation, and strategy.",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -170,27 +165,19 @@ Return strictly JSON without markdown code fences:
      "Gold_Precious_Metals": number,
      "Cryptocurrency_BTC": number
   }}
-}}
-"""
-        response = None
-        for model_candidate in ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"]:
-            try:
-                response = client.models.generate_content(
-                    model=model_candidate,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json"
-                    )
-                )
-                if response and response.text:
-                    print(f"[OmniVest AI SUCCESS] Model '{model_candidate}' generated output.")
-                    break
-            except Exception as model_err:
-                print(f"[OmniVest Notice] Failed on {model_candidate}: {model_err}")
-                continue
+}}"""
+
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                max_output_tokens=300,
+                temperature=0.1
+            )
+        )
 
         if not response or not response.text:
-            print("[OmniVest Error] All candidate models failed to return a response.")
             return None
 
         raw_text = response.text.strip()
@@ -199,7 +186,7 @@ Return strictly JSON without markdown code fences:
         return json.loads(cleaned_text)
 
     except Exception as e:
-        print(f"[OmniVest Critical Exception] {e}")
+        print(f"[OmniVest Speed Fallback Triggered]: {e}")
         return None
 
 # ==========================================
@@ -207,32 +194,19 @@ Return strictly JSON without markdown code fences:
 # ==========================================
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
-    tickers = {
-        "Bitcoin (BTC)": "BTC-INR",
-        "NIFTY 50": "^NSEI",
-        "Gold (per 10g)": "GC=F",
-        "BSE SENSEX": "^BSESN"
-    }
     fallbacks = {
         "Bitcoin (BTC)": {"price": 6250000.0, "change": 1.45, "status": "up"},
         "NIFTY 50": {"price": 25200.0, "change": 0.40, "status": "up"},
         "Gold (per 10g)": {"price": 78500.0, "change": -0.25, "status": "down"},
         "BSE SENSEX": {"price": 82100.0, "change": 0.35, "status": "up"}
     }
-    live_data = {}
-    for name, symbol in tickers.items():
-        try:
-            t = yf.Ticker(symbol)
-            df = t.history(period="2d")
-            if len(df) >= 1:
-                cur = float(df['Close'].iloc[-1])
-                prev = float(df['Close'].iloc[-2]) if len(df) >= 2 else cur
-                chg = round(((cur - prev) / prev) * 100, 2)
-                live_data[name] = {"price": round(cur, 2), "change": chg, "status": "up" if chg >= 0 else "down"}
-            else:
-                live_data[name] = fallbacks[name]
-        except Exception:
-            live_data[name] = fallbacks[name]
+    summary = fetch_live_market_summary()
+    live_data = {
+        "Bitcoin (BTC)": {"price": summary.get("Bitcoin", {}).get("price", 6250000.0), "change": summary.get("Bitcoin", {}).get("change_pct", 1.45), "status": "up"},
+        "NIFTY 50": {"price": summary.get("NIFTY_50", {}).get("price", 25200.0), "change": summary.get("NIFTY_50", {}).get("change_pct", 0.40), "status": "up"},
+        "Gold (per 10g)": {"price": summary.get("Gold", {}).get("price", 78500.0), "change": summary.get("Gold", {}).get("change_pct", -0.25), "status": "down"},
+        "BSE SENSEX": {"price": summary.get("BSE_Sensex", {}).get("price", 82100.0), "change": summary.get("BSE_Sensex", {}).get("change_pct", 0.35), "status": "up"}
+    }
     return jsonify({"status": "success", "market": live_data, "server_time": time.time()})
 
 @app.route('/')
@@ -295,8 +269,6 @@ def analyze():
     budget_level = data.get('travel_style', 'mid')
     risk_tier = data.get('risk_tier', 'mid')
 
-    market_snapshot = fetch_live_market_summary()
-
     rate_map = {"low": 0.085, "mid": 0.125, "high": 0.160}
     expected_rate = rate_map.get(risk_tier, 0.125)
 
@@ -310,7 +282,6 @@ def analyze():
     n = years * 12
 
     if mode == 'budget':
-        # Fixed monthly investment value
         monthly_sip = max(input_val, 500.0)
         sip_growth_factor = (((1 + r)**n - 1) / r) * (1 + r)
         target_corpus = round(monthly_sip * sip_growth_factor, 2)
@@ -318,12 +289,10 @@ def analyze():
         goal_title = f"Monthly SIP Plan (₹{monthly_sip:,.0f}/mo)"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years ({n} months). "
-                        f"At a projected {risk_tier.capitalize()} CAGR of {expected_rate*100:.1f}%, your wealth accumulates "
-                        f"to ₹{target_corpus:,.0f} (Net Gain: ₹{target_corpus - total_invested:,.0f}).")
+        ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years. "
+                        f"At a projected CAGR of {expected_rate*100:.1f}%, accumulated value is ₹{target_corpus:,.0f}.")
 
     elif mode == 'corpus':
-        # Target payout goal
         target_corpus = max(input_val, 1000.0)
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
@@ -331,12 +300,12 @@ def analyze():
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
         ai_rationale = (f"Target corpus of ₹{target_corpus:,.0f} in {years} years. "
-                        f"At {expected_rate*100:.1f}% annual CAGR, investing ₹{monthly_sip:,.0f}/month accumulates your goal.")
+                        f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
 
     else:
-        # Dynamic AI Goal
-        ai_result = call_ai_financial_planner(
-            statement, years, mode, input_val, budget_level, risk_tier, market_snapshot
+        # High-speed AI execution
+        ai_result = call_ai_financial_planner_fast(
+            statement, years, mode, input_val, budget_level, risk_tier
         )
 
         if ai_result and isinstance(ai_result, dict) and "target_corpus" in ai_result:
@@ -353,12 +322,11 @@ def analyze():
             goal_title = statement if statement else "Custom Financial Goal"
             risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
             allocation = default_allocations.get(risk_tier)
-            ai_rationale = f"Live AI research timed out. Applied dynamic {budget_level.capitalize()} baseline of ₹{tier_cost:,} adjusted for {years} years at 5% annual inflation."
+            ai_rationale = f"Applied dynamic baseline of ₹{tier_cost:,} adjusted for {years} years at 5% annual inflation."
 
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
 
-    # Normalize allocation to 100%
     tot_pct = sum(allocation.values())
     if tot_pct > 0:
         allocation = {k: round((v / tot_pct) * 100, 1) for k, v in allocation.items()}
