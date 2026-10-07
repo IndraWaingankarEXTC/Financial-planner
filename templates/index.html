@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniVest | AI Wealth Engine (INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,25 +25,16 @@
             background: radial-gradient(circle at 10% 20%, #fdf4ff 0%, #eff6ff 40%, #ecfdf5 90%);
             min-height: 100vh;
             color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        /* RESPONSIVE CARD SYSTEM */
         .card-custom {
             background: var(--surface-card);
             border: 2px solid #e0e7ff;
             border-radius: var(--card-radius);
             box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        @media (max-width: 768px) {
-            .card-custom {
-                border-radius: 20px;
-                padding: 1.25rem !important;
-            }
+            transition: all 0.25s ease;
         }
 
         .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
@@ -51,45 +42,45 @@
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
-        /* REAL-TIME MARKET TICKER (Touch Scrollable on Mobile) */
+        /* REAL-TIME MARKET TICKER */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 2px solid #e2e8f0;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             white-space: nowrap;
             overflow-x: auto;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
         }
-        .market-ticker-bar::-webkit-scrollbar { display: none; }
-
         .ticker-pill {
             display: inline-flex;
             align-items: center;
             background: #ffffff;
             border: 2px solid #e2e8f0;
             border-radius: 30px;
-            padding: 4px 14px;
-            margin: 4px 5px;
+            padding: 5px 16px;
+            margin: 4px 6px;
             font-weight: 700;
-            font-size: 0.82rem;
             transition: background 0.3s ease, transform 0.2s ease;
         }
-        .price-flash-up { background: #dcfce7 !important; transform: scale(1.04); }
-        .price-flash-down { background: #ffe4e6 !important; transform: scale(1.04); }
+        .price-flash-up {
+            background: #dcfce7 !important;
+            transform: scale(1.04);
+        }
+        .price-flash-down {
+            background: #ffe4e6 !important;
+            transform: scale(1.04);
+        }
 
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
-        /* BUTTONS & TOUCH TARGETS */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
             font-weight: 700;
             border-radius: var(--button-radius);
             border: none;
-            min-height: 48px;
+            padding: 12px 20px;
             box-shadow: 0 6px 18px -3px rgba(139, 92, 246, 0.4);
             transition: all 0.2s ease;
         }
@@ -98,7 +89,6 @@
             box-shadow: 0 10px 22px -3px rgba(139, 92, 246, 0.5);
             color: #fff;
         }
-        .btn-brand:active { transform: translateY(1px) scale(0.98); }
 
         .btn-confirm-deal {
             background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
@@ -106,31 +96,22 @@
             font-weight: 700;
             border-radius: var(--button-radius);
             border: none;
-            min-height: 48px;
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
         }
-        .btn-confirm-deal:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -3px rgba(16, 185, 129, 0.45);
-            color: #fff;
-        }
-        .btn-confirm-deal:active { transform: translateY(1px) scale(0.98); }
 
         .form-control, .form-select {
             border-radius: 14px;
             border: 2px solid #cbd5e1;
             padding: 10px 14px;
-            min-height: 46px;
             font-weight: 600;
-            font-size: 0.95rem;
         }
         .form-control:focus, .form-select:focus {
             border-color: #8b5cf6;
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
-        /* BRAND LOGO STYLES */
+        /* HARMONIZED LIGHT-THEMED LOGO STYLING */
         .omnivest-logo-icon {
             display: inline-flex;
             align-items: center;
@@ -139,138 +120,64 @@
             filter: drop-shadow(0 6px 14px rgba(34, 58, 94, 0.12));
             transition: transform 0.25s ease;
         }
-        .omnivest-logo-icon:hover { transform: translateY(-1px) scale(1.04); }
-
-        /* ANIMATED TAB SWITCHER */
-        .nav-pills {
-            background: #eef2ff;
-            padding: 5px;
-            border-radius: 18px;
-            position: relative;
-        }
-        .nav-pills .nav-link {
-            border-radius: 14px;
-            font-weight: 700;
-            color: #64748b;
-            padding: 10px 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .nav-pills .nav-link.active {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: #fff !important;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-            transform: scale(1.02);
+        .omnivest-logo-icon:hover {
+            transform: translateY(-1px) scale(1.04);
         }
 
-        /* SLIDING TAB PANE TRANSITION */
-        .tab-content > .tab-pane {
-            display: none;
-            opacity: 0;
-            transform: translateY(10px) scale(0.98);
-            transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .tab-content > .tab-pane.active {
-            display: block;
-        }
-        .tab-content > .tab-pane.show {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        /* ANIMATED MULTI-CURRENCY LOADER */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
 
-        .currency-spread {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+        .currency-spread { display: flex; gap: 12px; margin-bottom: 20px; }
         .currency-badge {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
+            width: 54px; height: 54px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; font-weight: 800; color: white;
             box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-            animation: currencyPulse 1.2s infinite alternate ease-in-out;
+            animation: floatCurrency 1.2s infinite alternate ease-in-out;
         }
-        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); animation-delay: 0s; }
+        .curr-inr { background: linear-gradient(135deg, #10b981, #059669); }
         .curr-usd { background: linear-gradient(135deg, #3b82f6, #1d4ed8); animation-delay: 0.15s; }
         .curr-eur { background: linear-gradient(135deg, #6366f1, #4338ca); animation-delay: 0.3s; }
         .curr-yen { background: linear-gradient(135deg, #ec4899, #be185d); animation-delay: 0.45s; }
         .curr-gbp { background: linear-gradient(135deg, #f59e0b, #d97706); animation-delay: 0.6s; }
 
-        @keyframes currencyPulse {
-            0% { transform: translateY(0) scale(0.9); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-            100% { transform: translateY(-16px) scale(1.08); box-shadow: 0 14px 24px rgba(0,0,0,0.18); }
+        @keyframes floatCurrency {
+            0% { transform: translateY(0) scale(0.95); }
+            100% { transform: translateY(-16px) scale(1.05); }
         }
 
-        .loader-shimmer-bar {
-            width: 220px;
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            margin-top: 14px;
-        }
-        .loader-shimmer-bar::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; bottom: 0;
-            width: 40%;
-            background: linear-gradient(90deg, #6366f1, #10b981);
-            border-radius: 10px;
-            animation: shimmerMove 1.4s infinite ease-in-out;
-        }
-        @keyframes shimmerMove {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(300%); }
+        .nav-pills { background: #eef2ff; padding: 6px; border-radius: 20px; }
+        .nav-pills .nav-link { border-radius: 16px; font-weight: 700; color: #64748b; padding: 10px 18px; }
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
 
-        /* PORTFOLIO CARD */
         .portfolio-bubble {
-            border: 2px solid #e2e8f0;
-            border-radius: 18px;
-            background: #ffffff;
-            cursor: pointer;
+            border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
             transition: all 0.2s ease;
         }
-        .portfolio-bubble:hover { border-color: #8b5cf6; }
-
         .expanded-details {
-            background: #f8fafc;
-            border-top: 1px dashed #cbd5e1;
-            padding: 12px;
-            margin-top: 10px;
-            display: none;
+            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 12px; margin-top: 10px; display: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- ANIMATED LOADER -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -279,24 +186,23 @@
             <div class="currency-badge curr-yen">¥</div>
             <div class="currency-badge curr-gbp">£</div>
         </div>
-        <h5 class="fw-bold text-dark text-center mb-1" id="loadingText">Analyzing Live Markets...</h5>
-        <p class="text-muted small fw-semibold text-center mb-0">Consulting Gemini AI to derive optimal asset allocations...</p>
-        <div class="loader-shimmer-bar"></div>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Live Markets...</h4>
+        <p class="text-muted small fw-semibold">Consulting Gemini AI to derive optimal asset allocations...</p>
     </div>
 
-    <!-- LIVE TICKER BAR -->
+    <!-- Live Ticker Bar -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
             <i class="fa-solid fa-circle text-success fa-fade me-2" style="font-size: 0.75rem;"></i> Connecting to market feeds...
         </div>
     </div>
 
-    <!-- TOP NAVIGATION -->
-    <nav class="navbar py-2 py-md-3 mb-2">
+    <!-- CLEAN TOP NAVIGATION (Only OmniVest Logo & Brand Name) -->
+    <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-extrabold fs-4 fs-md-3 text-dark d-flex align-items-center mb-0">
+            <span class="navbar-brand fw-extrabold fs-3 text-dark d-flex align-items-center mb-0">
                 <span class="omnivest-logo-icon me-2">
-                    <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="navCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
                                 <stop offset="0%" stop-color="#2c4d79"/>
@@ -322,15 +228,15 @@
     </nav>
 
     <div class="container pb-5">
-        <!-- AUTH VIEW -->
-        <div id="authView" class="row justify-content-center my-3 my-md-4">
-            <div class="col-12 col-sm-10 col-md-7 col-lg-5">
+        <!-- Auth View -->
+        <div id="authView" class="row justify-content-center my-4">
+            <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
-                    <!-- CLEAN LOGIN HEADER -->
+                    <!-- CLEAN LOGIN HEADER (Matching Aesthetic) -->
                     <div class="text-center mb-4">
                         <div class="mb-3">
                             <span class="omnivest-logo-icon">
-                                <svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="loginCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
                                             <stop offset="0%" stop-color="#2c4d79"/>
@@ -350,12 +256,11 @@
                                 </svg>
                             </span>
                         </div>
-                        <h4 class="fw-extrabold mb-1 text-dark">OmniVest</h4>
-                        <p class="text-success small fw-bold mb-2" style="font-size: 0.85rem; letter-spacing: 0.3px;">"Invest Today. Secure Tomorrow."</p>
-                        <p class="text-muted small mb-0">Sign in to manage and plan your multi-asset portfolios.</p>
+                        <h3 class="fw-extrabold mb-1 text-dark">OmniVest</h3>
+                        <p class="text-success small fw-bold mb-2" style="font-size: 0.88rem; letter-spacing: 0.4px;">"Invest Today. Secure Tomorrow."</p>
+                        <p class="text-muted small">Sign in to access your portfolio management console.</p>
                     </div>
 
-                    <!-- ANIMATED TAB SWITCHER -->
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
                         <li class="nav-item">
                             <button class="nav-link active" id="customer-tab" data-bs-toggle="pill" data-bs-target="#customerPane" type="button" role="tab" aria-selected="true">
@@ -370,7 +275,6 @@
                     </ul>
 
                     <div class="tab-content" id="loginTabContent">
-                        <!-- CUSTOMER PANE -->
                         <div class="tab-pane fade show active" id="customerPane" role="tabpanel">
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-dark">Your Name</label>
@@ -385,7 +289,6 @@
                             </button>
                         </div>
 
-                        <!-- ADMIN PANE -->
                         <div class="tab-pane fade" id="adminPane" role="tabpanel">
                             <div class="p-3 rounded-3 bg-light border mb-3 small">
                                 <strong class="text-primary">Admin Access:</strong><br>
@@ -411,21 +314,73 @@
             </div>
         </div>
 
-        <!-- DASHBOARD VIEW -->
+        <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
-            <!-- SUMMARY STATS -->
-            <div class="row g-2 g-md-3 mb-3 mb-md-4">
+            <!-- Summary Stats -->
+            <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
-                    <div class="card-custom stat-box-1 p-2 p-md-3 text-center">
+                    <div class="card-custom stat-box-1 p-3 text-center">
                         <small class="text-primary fw-bold" id="statPortfoliosLabel">Active Plans</small>
-                        <div class="fs-4 fs-md-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card-custom stat-box-2 p-2 p-md-3 text-center">
+                    <div class="card-custom stat-box-2 p-3 text-center">
                         <small class="text-success fw-bold" id="statPrincipalLabel">Invested Principal</small>
-                        <div class="fs-4 fs-md-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
+                        <div class="fs-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card-custom stat-box-3 p-2 p-md-3 text
+                    <div class="card-custom stat-box-3 p-3 text-center">
+                        <small class="text-warning-emphasis fw-bold" id="statGainLabel">Projected Profit</small>
+                        <div class="fs-3 fw-extrabold text-dark mt-1" id="statGain">+₹0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card-custom stat-box-4 p-3 text-center">
+                        <small class="text-danger fw-bold" id="statMaturityLabel">Final Corpus</small>
+                        <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN NOTICE BANNER -->
+            <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">Administrative Oversight Mode</h6>
+                        <span class="small text-secondary">
+                            You are reviewing all investor portfolios submitted across the platform. Investment planning tools are disabled for supervisory accounts.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMER-ONLY PLANNER SECTION -->
+            <div id="customerPlannerSection" class="row g-4 mb-4">
+                <div class="col-lg-5">
+                    <div class="card-custom p-4 h-100">
+                        <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Strategy Mode</label>
+                            <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
+                                <option value="goal">Goal & Trip Destination</option>
+                                <option value="budget">Monthly Savings Willingness (₹)</option>
+                                <option value="corpus">Exact Target Corpus Amount (₹)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="travelStyleContainer">
+                            <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
+                            <select id="travelStyleInput" class="form-select border-primary-subtle">
+                                <option value="budget">Budget / Backpacker (Hostels, regional transport, local meals)</option>
+                                <option value="mid" selected>Mid-Range Standard (3-4 star stays, city transit, guided tours)</option>
+                                <option value="luxury">Luxury / Premium (5-star hotels, private transfers, fine dining)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
+                 
