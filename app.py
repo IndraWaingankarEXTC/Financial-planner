@@ -120,87 +120,64 @@ def fetch_live_market_summary():
     return summary
 
 def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier, market_snapshot):
-    if not GENAI_AVAILABLE:
-        print("[OmniVest Error] google-genai library is not installed.")
-        return None
-    if not GEMINI_API_KEY:
-        print("[OmniVest Error] GEMINI_API_KEY environment variable is missing or empty.")
+    if not (GENAI_AVAILABLE and GEMINI_API_KEY):
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
-        
         prompt = f"""
 You are an expert quantitative financial research advisor and autonomous pricing intelligence engine.
 All calculated monetary figures must be in Indian Rupees (INR / ₹).
 
-Current Live Market Data (yFinance):
+Current Live Market Data:
 {json.dumps(market_snapshot, indent=2)}
 
-User Request & Parameters:
-- Custom Goal / Desire: "{intent_text}"
+User Request:
+- Custom Goal: "{intent_text}"
 - Planning Mode: {mode}
-- User Numeric Input: {budget_or_corpus}
+- Numeric Input: {budget_or_corpus}
 - Tenure: {tenure_years} years
 - Budget Scale: {budget_level} (Low Budget, Mid Budget, High Budget)
 - Risk Preference: {risk_tier} (Low Risk, Mid Risk, High Risk)
 
-YOUR RESEARCH & ESTIMATION TASK:
-1. Deeply understand the user's specific goal. Conduct mental domain research:
-   - IF AN EV OR VEHICLE (e.g. "I want to buy an EV"):
-     * Determine which exact EV model fits the requested budget level in India (e.g. Tata Tiago EV / MG Comet for Low; Tata Nexon EV / Mahindra XUV400 / MG ZS EV for Mid; BYD Seal / Hyundai Ioniq 5 / BMW i4 for High).
-     * Identify real on-road pricing in India (base price + RTO + battery insurance).
-   - IF A TRIP (e.g. "trip to Italy", "Netherlands for 100 days"):
-     * Detect duration in days (e.g. 100 days). If not stated, assume 10 days.
-     * Research realistic round-trip flights from Indian metros.
-     * Calculate per-day expenses (stay, food, transit, entry passes) converted to INR at live exchange rates.
-     * Total present trip cost = Flights + (Daily Expense * Days).
-   - IF OTHER MILESTONES (e.g. "start a café", "MBA in UK", "wedding", "buy a flat down payment"):
-     * Break down the realistic present cost in India or abroad based on the chosen tier ({budget_level}).
-2. Factor in realistic inflation:
-   * Apply compound inflation of 5% to 6% per annum over {tenure_years} years: Target Corpus = Present Cost * ((1 + 0.05) ** {tenure_years}).
-3. Determine Multi-Asset Portfolio Allocation for '{risk_tier}' risk:
-   * Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
-   * Total percentages MUST sum up to exactly 100.
-4. Estimate realistic overall portfolio CAGR (e.g. 0.08 to 0.17).
+RESEARCH & ESTIMATION TASK:
+1. Conduct research on the user's specific goal:
+   - For an EV / Vehicle: Select a popular real model in India matching {budget_level} (e.g. Tiago/Comet for Low, Nexon EV/XUV400 for Mid, Ioniq 5/Seal for High). Determine on-road price.
+   - For Travel / Trips: Calculate roundtrip flights from India + reasonable daily expenses matching {budget_level} converted to INR for the duration stated.
+   - For other goals (buying a house down payment, education, starting a business): Estimate actual present-day cost in INR.
+2. Factor in 5% annual compound inflation over {tenure_years} years.
+3. Recommend portfolio percentage allocations for '{risk_tier}' risk (must sum to 100):
+   Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
+4. Estimate realistic portfolio CAGR (0.08 to 0.17).
 
-OUTPUT FORMAT:
-Respond ONLY with a valid, clean JSON object (no markdown, no ``` backticks):
+Return strictly raw JSON format without code fences:
 {{
-  "destination_title": "Precise goal title (e.g. 'Tata Nexon EV Empowered Long Range' or '100-Day Netherlands Trip')",
-  "target_corpus": <final integer in INR after inflation>,
-  "present_cost_inr": <estimated present cost in INR>,
-  "expected_annual_rate": <decimal, e.g. 0.12>,
-  "risk_profile_description": "{risk_tier.capitalize()} Risk Portfolio",
+  "destination_title": "string",
+  "target_corpus": number,
+  "present_cost_inr": number,
+  "expected_annual_rate": number,
+  "risk_profile_description": "{risk_tier.capitalize()} Risk Strategy",
   "ai_rationale": "Detail the exact model/flight/daily costs researched, exchange rates used, inflation compounding over {tenure_years} years, and why this asset allocation was chosen.",
   "allocation_pcts": {{
-     "Stock_Market_Index": <number>,
-     "Mutual_Funds": <number>,
-     "Real_Estate_REITs": <number>,
-     "Gold_Precious_Metals": <number>,
-     "Cryptocurrency_BTC": <number>
+     "Stock_Market_Index": number,
+     "Mutual_Funds": number,
+     "Real_Estate_REITs": number,
+     "Gold_Precious_Metals": number,
+     "Cryptocurrency_BTC": number
   }}
 }}
 """
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.2
-            )
+            config=types.GenerateContentConfig(response_mime_type="application/json")
         )
-        
         raw_text = response.text.strip()
         cleaned_text = re.sub(r'^```json\s*', '', raw_text)
         cleaned_text = re.sub(r'\s*```$', '', cleaned_text)
-        
-        parsed = json.loads(cleaned_text)
-        print(f"[OmniVest AI Success] Calculated target corpus: ₹{parsed.get('target_corpus'):,}")
-        return parsed
-
+        return json.loads(cleaned_text)
     except Exception as e:
-        print(f"[OmniVest AI Exception] Call failed: {e}")
+        print(f"Gemini API Error: {e}")
         return None
 
 # ==========================================
@@ -297,7 +274,6 @@ def analyze():
 
     market_snapshot = fetch_live_market_summary()
 
-    # Rate calibrations
     rate_map = {"low": 0.085, "mid": 0.125, "high": 0.160}
     expected_rate = rate_map.get(risk_tier, 0.125)
 
@@ -310,34 +286,33 @@ def analyze():
     r = expected_rate / 12
     n = years * 12
 
-    # MODE HANDLING WITH FIXED SIP & LOWER MINIMUMS
+    # Precise calculations based on mode:
     if mode == 'budget':
-        # FIX 1: User explicitly gives monthly SIP amount. SIP MUST remain strictly constant.
+        # SIP stays 100% constant
         monthly_sip = max(input_val, 500.0)
-        # Accurate geometric compound annuity formula
         sip_growth_factor = (((1 + r)**n - 1) / r) * (1 + r)
         target_corpus = round(monthly_sip * sip_growth_factor, 2)
         total_invested = round(monthly_sip * n, 2)
-        goal_title = f"Monthly SIP Accumulator (₹{monthly_sip:,.0f}/mo)"
+        goal_title = f"Monthly SIP Plan (₹{monthly_sip:,.0f}/mo)"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Fixed SIP of ₹{monthly_sip:,.0f}/month invested over {years} years ({n} months). "
+        ai_rationale = (f"Fixed SIP of ₹{monthly_sip:,.0f}/month over {years} years ({n} months). "
                         f"At a {risk_tier.capitalize()} risk projected CAGR of {expected_rate*100:.1f}%, your wealth compounds "
-                        f"to ₹{target_corpus:,.0f} (Gain: ₹{target_corpus - total_invested:,.0f}).")
+                        f"to ₹{target_corpus:,.0f} (Net Gain: ₹{target_corpus - total_invested:,.0f}).")
 
     elif mode == 'corpus':
-        # FIX 2: Fixed target amount allows any goal (e.g. ₹50,000, ₹25,000, etc.)
+        # Target amounts below 1 Lakh (e.g. 50,000) are fully supported
         target_corpus = max(input_val, 1000.0)
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
         goal_title = f"Target Corpus of ₹{target_corpus:,.0f}"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Target payout of ₹{target_corpus:,.0f} in {years} years. "
+        ai_rationale = (f"Target corpus of ₹{target_corpus:,.0f} over {years} years. "
                         f"At {expected_rate*100:.1f}% annual CAGR, investing ₹{monthly_sip:,.0f}/month accumulates your goal.")
 
     else:
-        # mode == 'goal': Let Gemini autonomously research pricing and model
+        # mode == 'goal': Gemini determines pricing and inflation
         ai_result = call_ai_financial_planner(
             statement, years, mode, input_val, budget_level, risk_tier, market_snapshot
         )
@@ -356,12 +331,12 @@ def analyze():
             goal_title = statement if statement else "Custom Financial Goal"
             risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
             allocation = default_allocations.get(risk_tier)
-            ai_rationale = f"[Offline Fallback] Estimated baseline of ₹{tier_cost:,} compounded over {years} years at 5% annual inflation."
+            ai_rationale = f"Calculated with an estimated ₹{tier_cost:,} baseline compounding at 5% annual inflation over {years} years."
 
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
 
-    # Normalize allocation to exactly 100%
+    # Normalize allocation to 100%
     tot_pct = sum(allocation.values())
     if tot_pct > 0:
         allocation = {k: round((v / tot_pct) * 100, 1) for k, v in allocation.items()}
