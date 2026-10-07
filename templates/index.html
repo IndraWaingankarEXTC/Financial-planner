@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Live AI Wealth Planner (INR)</title>
+    <title>OmniVest | AI Wealth & Goal Planner (INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -187,7 +187,7 @@
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">INR</span>
-                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Travel Planner</span>
+                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Goal Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -291,7 +291,7 @@
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE BANNER (Only displayed for Admin) -->
+            <!-- ADMIN NOTICE BANNER -->
             <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
@@ -304,7 +304,7 @@
                 </div>
             </div>
 
-            <!-- CUSTOMER-ONLY PLANNER SECTION (Completely hidden for Admin) -->
+            <!-- CUSTOMER-ONLY PLANNER SECTION -->
             <div id="customerPlannerSection" class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
@@ -313,36 +313,36 @@
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Strategy Mode</label>
                             <select id="planningMode" class="form-select" onchange="toggleModeInputs()">
-                                <option value="goal">Goal & Trip Destination</option>
+                                <option value="goal">Custom Financial Goal</option>
                                 <option value="budget">Monthly Savings Willingness (₹)</option>
                                 <option value="corpus">Exact Target Corpus Amount (₹)</option>
                             </select>
                         </div>
 
+                        <!-- Simplified Budget Level -->
                         <div class="mb-3" id="travelStyleContainer">
-                            <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
+                            <label class="form-label small fw-bold text-muted">Budget Level</label>
                             <select id="travelStyleInput" class="form-select border-primary-subtle">
-                                <option value="budget">Budget / Backpacker (Hostels, regional transport, local meals)</option>
-                                <option value="mid" selected>Mid-Range Standard (3-4 star stays, city transit, guided tours)</option>
-                                <option value="luxury">Luxury / Premium (5-star hotels, private transfers, fine dining)</option>
+                                <option value="budget">Low Budget</option>
+                                <option value="mid" selected>Mid Budget</option>
+                                <option value="luxury">High Budget</option>
                             </select>
                         </div>
 
+                        <!-- Simplified Risk Preference -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
                             <select id="riskTierInput" class="form-select border-info-subtle">
-                                <option value="low">Low Risk (Capital Preservation: Debt, FDs, Gold, large-cap index)</option>
-                                <option value="mid" selected>Mid Risk (Balanced Growth: Index equities, mutual funds, diversified assets)</option>
-                                <option value="high">High Risk (Aggressive Compounding: High equity exposure and digital assets)</option>
+                                <option value="low">Low Risk</option>
+                                <option value="mid" selected>Mid Risk</option>
+                                <option value="high">High Risk</option>
                             </select>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
-                                Gemini AI dynamically calculates asset weights based on duration and market trends.
-                            </small>
                         </div>
 
+                        <!-- Open-ended Goal Input -->
                         <div class="mb-3" id="inputContainer">
-                            <label class="form-label small fw-bold text-muted">Destination & Duration</label>
-                            <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
+                            <label class="form-label small fw-bold text-muted">Financial Goal & Target</label>
+                            <textarea id="statementInput" rows="3" class="form-control" placeholder="Please enter any goal that you wish to fulfill (e.g. buying a car, starting a business, higher education, retirement, down payment for a house, or a vacation)...">I want to build a fund to start a business in 3 years.</textarea>
                         </div>
 
                         <div class="mb-4">
@@ -366,16 +366,16 @@
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
+                            <p>Configure your target goal on the left. The AI will evaluate live market trends and timeline to craft a customized strategy.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">AI Strategy</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Mid Risk</span>
                             </div>
                             <div class="mb-2">
-                                <span class="badge bg-light text-dark border me-1" id="styleBadge">Comfort: Standard</span>
+                                <span class="badge bg-light text-dark border me-1" id="styleBadge">Tier: Mid Budget</span>
                                 <span class="badge bg-info-subtle text-info border" id="tenureBadge">3 Years</span>
                             </div>
                             <div class="p-3 bg-light rounded-3 border mb-3 small" id="resRationale"></div>
@@ -417,7 +417,7 @@
                 </div>
             </div>
 
-            <!-- Ledger Records (Accessible to Both; Admin sees all users) -->
+            <!-- Ledger Records -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
@@ -529,8 +529,8 @@
             if (mode === 'goal') {
                 styleContainer.style.display = 'block';
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Destination & Duration</label>
-                    <textarea id="statementInput" rows="3" class="form-control">I want to plan a trip to Netherlands for 10 days in 3 years.</textarea>
+                    <label class="form-label small fw-bold text-muted">Financial Goal & Target</label>
+                    <textarea id="statementInput" rows="3" class="form-control" placeholder="Please enter any goal that you wish to fulfill (e.g. buying a car, starting a business, higher education, retirement, down payment for a house, or a vacation)...">I want to build a fund to start a business in 3 years.</textarea>
                 `;
             } else if (mode === 'budget') {
                 styleContainer.style.display = 'none';
@@ -583,7 +583,6 @@
             document.getElementById('dashboardView').style.display = 'block';
 
             if (isAdmin) {
-                // Hide planner and options entirely for Admin
                 document.getElementById('customerPlannerSection').classList.add('d-none');
                 document.getElementById('adminNoticeBanner').classList.remove('d-none');
                 
@@ -596,11 +595,10 @@
                 document.getElementById('ledgerTitleText').innerText = "Platform-Wide User Portfolios";
                 document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (INR)`;
             } else {
-                // Show planner for Customer
                 document.getElementById('customerPlannerSection').classList.remove('d-none');
                 document.getElementById('adminNoticeBanner').classList.add('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Wealth & Travel Planner";
+                document.getElementById('navRoleBadge').innerText = "Wealth & Goal Planner";
                 document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
                 document.getElementById('statGainLabel').innerText = "Projected Profit";
@@ -634,7 +632,7 @@
             const travel_style = document.getElementById('travelStyleInput').value;
             const risk_tier = document.getElementById('riskTierInput').value;
 
-            showLoading("Gemini AI is analyzing duration and market data...");
+            showLoading("Gemini AI is analyzing market parameters...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -647,13 +645,16 @@
                 const { data } = await res.json();
                 activePlan = data;
 
+                const budgetMap = { 'budget': 'Low Budget', 'mid': 'Mid Budget', 'luxury': 'High Budget' };
+                const riskMap = { 'low': 'Low Risk', 'mid': 'Mid Risk', 'high': 'High Risk' };
+
                 document.getElementById('aiEmpty').style.display = 'none';
                 document.getElementById('aiReady').style.display = 'block';
                 document.getElementById('resGoal').innerText = data.goal_identified;
-                document.getElementById('riskBadge').innerText = data.risk_profile;
-                document.getElementById('styleBadge').innerText = `Style: ${data.travel_style}`;
+                document.getElementById('riskBadge').innerText = riskMap[risk_tier] || data.risk_profile;
+                document.getElementById('styleBadge').innerText = `Tier: ${budgetMap[travel_style] || travel_style}`;
                 document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years (${data.expected_rate_annual} CAGR)`;
-                document.getElementById('resRationale').innerHTML = `<strong>AI Market Rationale:</strong> ${data.ai_rationale}`;
+                document.getElementById('resRationale').innerHTML = `<strong>AI Plan Rationale:</strong> ${data.ai_rationale}`;
                 document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
                 document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
 
@@ -743,8 +744,7 @@
                             <div>
                                 <span class="badge rounded-pill bg-primary px-3 py-1">Plan #${item.record_id}</span>
                                 <span class="badge rounded-pill bg-dark text-white border ms-1">Investor: ${tx.user}</span>
-                                <span class="badge rounded-pill bg-info-subtle text-info border ms-1">${tx.travel_style || 'Standard'}</span>
-                                <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.duration_days || 7} Days</span>
+                                <span class="badge rounded-pill bg-info-subtle text-info border ms-1">${tx.travel_style || 'Mid Budget'}</span>
                             </div>
                             <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
