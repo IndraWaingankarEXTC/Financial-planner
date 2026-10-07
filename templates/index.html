@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Intelligent AI Wealth & Goal Planner</title>
-    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)">
-    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)">
-    <link href="[https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap)" rel="stylesheet">
+    <title>OmniVest | Live AI Wealth & Goal Planner (INR)</title>
+    <!-- Fonts & Frameworks -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -25,10 +26,11 @@
             background: radial-gradient(circle at 10% 20%, #fdf4ff 0%, #eff6ff 40%, #ecfdf5 90%);
             min-height: 100vh;
             color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             overflow-x: hidden;
         }
 
+        /* Glassmorphism Cards */
         .card-custom {
             background: var(--surface-card);
             border: 2px solid #e0e7ff;
@@ -36,12 +38,17 @@
             box-shadow: 0 12px 28px -8px rgba(79, 70, 229, 0.08);
             transition: all 0.25s ease;
         }
+        .card-custom:hover {
+            box-shadow: 0 18px 36px -8px rgba(79, 70, 229, 0.12);
+        }
 
-        .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; }
-        .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; }
-        .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
-        .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
+        /* Stat Counter Boxes */
+        .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; border-radius: 20px; }
+        .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; border-radius: 20px; }
+        .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; border-radius: 20px; }
+        .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; border-radius: 20px; }
 
+        /* Dynamic Live Ticker Bar */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -49,16 +56,20 @@
             font-size: 0.88rem;
             white-space: nowrap;
             overflow-x: auto;
+            scrollbar-width: none;
         }
+        .market-ticker-bar::-webkit-scrollbar { display: none; }
+
         .ticker-pill {
             display: inline-flex;
             align-items: center;
             background: #ffffff;
             border: 2px solid #e2e8f0;
             border-radius: 30px;
-            padding: 5px 16px;
+            padding: 6px 18px;
             margin: 4px 6px;
             font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
             transition: background 0.3s ease, transform 0.2s ease;
         }
         .price-flash-up {
@@ -73,6 +84,7 @@
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
+        /* Buttons & Highlights */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
@@ -98,18 +110,25 @@
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
         }
+        .btn-confirm-deal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px -3px rgba(16, 185, 129, 0.45);
+            color: #fff;
+        }
 
         .form-control, .form-select {
             border-radius: 14px;
             border: 2px solid #cbd5e1;
             padding: 10px 14px;
             font-weight: 600;
+            transition: all 0.2s ease;
         }
         .form-control:focus, .form-select:focus {
             border-color: #8b5cf6;
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
+        /* Loading Screen */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -126,11 +145,11 @@
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
 
-        .currency-spread { display: flex; gap: 12px; margin-bottom: 20px; }
+        .currency-spread { display: flex; gap: 14px; margin-bottom: 24px; }
         .currency-badge {
-            width: 54px; height: 54px; border-radius: 50%;
+            width: 56px; height: 56px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; font-weight: 800; color: white;
+            font-size: 1.7rem; font-weight: 800; color: white;
             box-shadow: 0 8px 18px rgba(0,0,0,0.12);
             animation: floatCurrency 1.2s infinite alternate ease-in-out;
         }
@@ -157,13 +176,19 @@
             border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
             transition: all 0.2s ease;
         }
+        .portfolio-bubble:hover {
+            border-color: #a5b4fc;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.08);
+            transform: translateY(-1px);
+        }
         .expanded-details {
-            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 12px; margin-top: 10px; display: none;
+            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 14px; margin-top: 10px; border-radius: 0 0 16px 16px; display: none;
         }
     </style>
 </head>
 <body>
 
+    <!-- Loading Modal Overlay -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -172,8 +197,8 @@
             <div class="currency-badge curr-yen">¥</div>
             <div class="currency-badge curr-gbp">£</div>
         </div>
-        <h4 class="fw-bold text-dark" id="loadingText">Researching Goal & Market Data...</h4>
-        <p class="text-muted small fw-semibold">OmniVest is calculating allocations and pricing parameters...</p>
+        <h4 class="fw-bold text-dark" id="loadingText">Analyzing Live Markets...</h4>
+        <p class="text-muted small fw-semibold">Consulting Gemini AI to derive optimal asset allocations...</p>
     </div>
 
     <!-- Live Ticker Bar -->
@@ -183,11 +208,12 @@
         </div>
     </div>
 
+    <!-- Navigation Header -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
+            <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center mb-0">
                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">INR</span>
-                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Autonomous Wealth Planner</span>
+                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Goal Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -319,7 +345,7 @@
                             </select>
                         </div>
 
-                        <!-- Budget Scale Selection -->
+                        <!-- Budget Scale -->
                         <div class="mb-3" id="travelStyleContainer">
                             <label class="form-label small fw-bold text-muted">Budget Level</label>
                             <select id="travelStyleInput" class="form-select border-primary-subtle">
@@ -337,9 +363,12 @@
                                 <option value="mid" selected>Mid Risk</option>
                                 <option value="high">High Risk</option>
                             </select>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                                Gemini AI dynamically calculates asset weights based on duration and market trends.
+                            </small>
                         </div>
 
-                        <!-- Dynamic Input Container -->
+                        <!-- Goal Container -->
                         <div class="mb-3" id="inputContainer">
                             <label class="form-label small fw-bold text-muted">Goal</label>
                             <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
@@ -366,13 +395,13 @@
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Configure your desired plan on the left to see calculated allocations and growth curves.</p>
+                            <p>Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
-                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Mid Risk</span>
+                                <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Mid Risk Strategy</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-light text-dark border me-1" id="styleBadge">Tier: Mid Budget</span>
@@ -445,13 +474,13 @@
                 <div class="modal-body py-3">
                     <p class="small text-muted mb-2">Please acknowledge the disclosures before fixing your deal:</p>
                     <ol class="small text-secondary ps-3 mb-3">
-                        <li class="mb-2"><strong>AI Allocations:</strong> Portfolio weights and research baselines are dynamically evaluated by Gemini LLM.</li>
+                        <li class="mb-2"><strong>AI Allocations:</strong> Portfolio weights are dynamically recommended by Gemini LLM based on live market metrics.</li>
                         <li class="mb-2"><strong>Market Fluctuations:</strong> Compounded returns are projections and subject to actual market volatility.</li>
                     </ol>
                     <div class="form-check p-3 bg-light rounded-3 border">
                         <input class="form-check-input ms-0 me-2" type="checkbox" id="agreeTncCheck" onchange="toggleTncButton()">
                         <label class="form-check-label small fw-bold text-dark" for="agreeTncCheck">
-                            I accept the investment terms and asset allocations.
+                            I accept the AI-recommended strategy and investment terms.
                         </label>
                     </div>
                 </div>
@@ -465,13 +494,13 @@
         </div>
     </div>
 
-    <script src="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js)"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let activePlan = null;
         let lastPrices = {};
         let currentUserIsAdmin = false;
 
-        function showLoading(msg = "Researching Goal & Market Data...") {
+        function showLoading(msg = "Crunching numbers...") {
             document.getElementById('loadingText').innerText = msg;
             document.getElementById('loadingOverlay').classList.add('active');
         }
@@ -536,13 +565,13 @@
                 styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
-                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" min="500">
+                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" value="10000" min="500">
                 `;
             } else {
                 styleContainer.style.display = 'none';
                 container.innerHTML = `
                     <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
-                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" min="1000">
+                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" value="50000" min="1000">
                 `;
             }
         }
@@ -598,7 +627,7 @@
                 document.getElementById('customerPlannerSection').classList.remove('d-none');
                 document.getElementById('adminNoticeBanner').classList.add('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Autonomous Wealth Planner";
+                document.getElementById('navRoleBadge').innerText = "Wealth & Goal Planner";
                 document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
                 document.getElementById('statGainLabel').innerText = "Projected Profit";
@@ -637,7 +666,7 @@
                 return;
             }
 
-            showLoading("Computing customized plan...");
+            showLoading("Gemini AI is analyzing duration and market data...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -656,10 +685,10 @@
                 document.getElementById('aiEmpty').style.display = 'none';
                 document.getElementById('aiReady').style.display = 'block';
                 document.getElementById('resGoal').innerText = data.goal_identified;
-                document.getElementById('riskBadge').innerText = riskMap[risk_tier] || data.risk_profile;
+                document.getElementById('riskBadge').innerText = data.risk_profile;
                 document.getElementById('styleBadge').innerText = `Tier: ${budgetMap[travel_style] || travel_style}`;
                 document.getElementById('tenureBadge').innerText = `${data.tenure_years} Years (${data.expected_rate_annual} CAGR)`;
-                document.getElementById('resRationale').innerHTML = `<strong>Investment Plan Rationale:</strong> ${data.ai_rationale}`;
+                document.getElementById('resRationale').innerHTML = `<strong>AI Market Rationale:</strong> ${data.ai_rationale}`;
                 document.getElementById('resMonthlySip').innerText = `₹${data.monthly_allocation.toLocaleString('en-IN')} / mo`;
                 document.getElementById('resTargetCorpus').innerText = `₹${data.estimated_maturity_value.toLocaleString('en-IN')}`;
 
