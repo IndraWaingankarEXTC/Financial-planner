@@ -17,8 +17,6 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = "omnivest_ai_dynamic_market_2026"
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-
 USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
 GLOBAL_CSV_FILE = "global_master_investments.csv"
@@ -120,46 +118,47 @@ def fetch_live_market_summary():
     return summary
 
 def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier, market_snapshot):
+    if not GENAI_AVAILABLE:
+        print("[OmniVest] google-genai library is missing.")
+        return None
+
     api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
     if not api_key:
-        print("[OmniVest Error] No GEMINI_API_KEY found.")
+        print("[OmniVest] API key is missing.")
         return None
 
     try:
-        client = genai.Client(api_key=api_key)
-        prompt = f"""
-You are an expert quantitative financial research advisor and autonomous pricing intelligence engine.
-All calculated monetary figures must be in Indian Rupees (INR / ₹).
+        # Client configured with strict 12s timeout to prevent thread hanging
+        client = genai.Client(api_key=api_key, http_options={"timeout": 12.0})
 
-Current Live Market Data:
-{json.dumps(market_snapshot, indent=2)}
+        prompt = f"""
+You are an expert quantitative financial pricing intelligence engine. All figures are in INR (₹).
 
 User Request:
-- Custom Goal: "{intent_text}"
-- Planning Mode: {mode}
-- Numeric Input: {budget_or_corpus}
+- Goal: "{intent_text}"
+- Mode: {mode}
+- Numeric Value: {budget_or_corpus}
 - Tenure: {tenure_years} years
-- Budget Scale: {budget_level} (Low Budget, Mid Budget, High Budget)
-- Risk Preference: {risk_tier} (Low Risk, Mid Risk, High Risk)
+- Budget Scale: {budget_level}
+- Risk Level: {risk_tier}
 
-RESEARCH & ESTIMATION TASK:
-1. Conduct research on the user's specific goal:
-   - For an EV / Vehicle: Select a popular real model in India matching {budget_level} (e.g. Tiago/Comet for Low, Nexon EV/XUV400 for Mid, Ioniq 5/Seal for High). Determine on-road price.
-   - For Travel / Trips: Calculate roundtrip flights from India + reasonable daily expenses matching {budget_level} converted to INR for the duration stated.
-   - For other goals (buying a house down payment, education, starting a business): Estimate actual present-day cost in INR.
-2. Factor in 5% annual compound inflation over {tenure_years} years.
-3. Recommend portfolio percentage allocations for '{risk_tier}' risk (must sum to 100):
-   Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
+TASK:
+1. Identify the specific purchase, trip, or milestone.
+   - For an EV / Vehicle: select a real model in India matching {budget_level} and calculate on-road price.
+   - For a trip: identify flights from India and daily living costs converted to INR.
+   - For general goals: calculate realistic baseline in INR.
+2. Compound present cost at 5% annual inflation over {tenure_years} years.
+3. Determine allocation percentages summing to 100 for: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
 4. Estimate realistic portfolio CAGR (0.08 to 0.17).
 
-Return strictly raw JSON format without code fences:
+Return strictly JSON:
 {{
   "destination_title": "string",
   "target_corpus": number,
   "present_cost_inr": number,
   "expected_annual_rate": number,
   "risk_profile_description": "{risk_tier.capitalize()} Risk Strategy",
-  "ai_rationale": "Detail the exact model/flight/daily costs researched, exchange rates used, inflation compounding over {tenure_years} years, and why this asset allocation was chosen.",
+  "ai_rationale": "Clear, concise 2-sentence rationale covering model/trip price, inflation, and asset split.",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -169,27 +168,18 @@ Return strictly raw JSON format without code fences:
   }}
 }}
 """
-        # Cascade through active models to handle 503 capacity spikes
-        models_to_try = [
-            "gemini-3.7-flash",
-            "gemini-3.8-flash",
-            "gemini-3.6-flash",
-            "gemini-3.5-flash"
-        ]
-
         response = None
-        for m in models_to_try:
+        for model_candidate in ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"]:
             try:
                 response = client.models.generate_content(
-                    model=m,
+                    model=model_candidate,
                     contents=prompt,
                     config=types.GenerateContentConfig(response_mime_type="application/json")
                 )
                 if response and response.text:
-                    print(f"[OmniVest AI Success] Handled by model: {m}")
                     break
-            except Exception as model_err:
-                print(f"[OmniVest Notice] {m} unavailable ({model_err}). Trying next fallback...")
+            except Exception as e:
+                print(f"[OmniVest] Attempt with {model_candidate} failed: {e}")
                 continue
 
         if not response or not response.text:
@@ -201,7 +191,7 @@ Return strictly raw JSON format without code fences:
         return json.loads(cleaned_text)
 
     except Exception as e:
-        print(f"[OmniVest Call Failed] {e}")
+        print(f"[OmniVest Exception] {e}")
         return None
 
 # ==========================================
@@ -283,10 +273,11 @@ def current_session():
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
-    if 'user' not in session: return jsonify({"status": "error"}), 401
+    if 'user' not in session: 
+        return jsonify({"status": "error", "message": "User session expired."}), 401
     
     if session.get('is_admin', False):
-        return jsonify({"status": "error", "message": "Administrators only oversee portfolios and cannot create investment plans."}), 403
+        return jsonify({"status": "error", "message": "Administrators cannot generate plans."}), 403
 
     data = request.json or {}
     mode = data.get('mode', 'goal')
@@ -310,9 +301,8 @@ def analyze():
     r = expected_rate / 12
     n = years * 12
 
-    # Precise calculations based on mode:
     if mode == 'budget':
-        # SIP stays 100% constant
+        # Constant SIP mode
         monthly_sip = max(input_val, 500.0)
         sip_growth_factor = (((1 + r)**n - 1) / r) * (1 + r)
         target_corpus = round(monthly_sip * sip_growth_factor, 2)
@@ -320,29 +310,28 @@ def analyze():
         goal_title = f"Monthly SIP Plan (₹{monthly_sip:,.0f}/mo)"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Fixed SIP of ₹{monthly_sip:,.0f}/month over {years} years ({n} months). "
-                        f"At a {risk_tier.capitalize()} risk projected CAGR of {expected_rate*100:.1f}%, your wealth compounds "
-                        f"to ₹{target_corpus:,.0f} (Net Gain: ₹{target_corpus - total_invested:,.0f}).")
+        ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years. "
+                        f"At a projected CAGR of {expected_rate*100:.1f}%, accumulated value is ₹{target_corpus:,.0f}.")
 
     elif mode == 'corpus':
-        # Target amounts below 1 Lakh (e.g. 50,000) are fully supported
+        # Target payout goal
         target_corpus = max(input_val, 1000.0)
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
         goal_title = f"Target Corpus of ₹{target_corpus:,.0f}"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
-        ai_rationale = (f"Target corpus of ₹{target_corpus:,.0f} over {years} years. "
-                        f"At {expected_rate*100:.1f}% annual CAGR, investing ₹{monthly_sip:,.0f}/month accumulates your goal.")
+        ai_rationale = (f"Target corpus of ₹{target_corpus:,.0f} in {years} years. "
+                        f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
 
     else:
-        # mode == 'goal': Gemini determines pricing and inflation
+        # Dynamic AI Goal
         ai_result = call_ai_financial_planner(
             statement, years, mode, input_val, budget_level, risk_tier, market_snapshot
         )
 
-        if ai_result:
-            goal_title = ai_result.get("destination_title", statement or "Custom Financial Goal")
+        if ai_result and isinstance(ai_result, dict) and "target_corpus" in ai_result:
+            goal_title = ai_result.get("destination_title", statement or "Custom Goal")
             target_corpus = float(ai_result.get("target_corpus", 350000))
             ai_rationale = ai_result.get("ai_rationale", "")
             risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
@@ -350,12 +339,13 @@ def analyze():
             expected_rate = float(ai_result.get("expected_annual_rate", expected_rate))
             r = expected_rate / 12
         else:
+            # Informative fallback that doesn't pretend to be the prior calculation
             tier_cost = {"budget": 150000, "mid": 450000, "luxury": 1200000}.get(budget_level, 450000)
             target_corpus = round(tier_cost * ((1.05) ** years), 2)
             goal_title = statement if statement else "Custom Financial Goal"
             risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
             allocation = default_allocations.get(risk_tier)
-            ai_rationale = f"Calculated with an estimated ₹{tier_cost:,} baseline compounding at 5% annual inflation over {years} years."
+            ai_rationale = f"Live AI research timed out. Applied dynamic {budget_level.capitalize()} baseline of ₹{tier_cost:,} adjusted for {years} years at 5% annual inflation."
 
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
@@ -403,7 +393,7 @@ def execute():
     if 'user' not in session: return jsonify({"status": "error"}), 401
     
     if session.get('is_admin', False):
-        return jsonify({"status": "error", "message": "Admins are strictly supervisors and cannot commit investments."}), 403
+        return jsonify({"status": "error", "message": "Admins cannot execute investments."}), 403
 
     data = request.json or {}; plan = data.get('plan', {}); u = session['user']
 
