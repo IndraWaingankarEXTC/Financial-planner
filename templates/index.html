@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Live AI Wealth Planner (INR)</title>
+    <title>OmniVest | AI Wealth Engine (INR)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,6 +42,7 @@
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
+        /* REAL-TIME MARKET TICKER */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -108,6 +109,19 @@
         .form-control:focus, .form-select:focus {
             border-color: #8b5cf6;
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
+
+        /* HARMONIZED LIGHT-THEMED LOGO STYLING */
+        .omnivest-logo-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            filter: drop-shadow(0 6px 14px rgba(34, 58, 94, 0.12));
+            transition: transform 0.25s ease;
+        }
+        .omnivest-logo-icon:hover {
+            transform: translateY(-1px) scale(1.04);
         }
 
         #loadingOverlay {
@@ -183,11 +197,31 @@
         </div>
     </div>
 
+    <!-- CLEAN TOP NAVIGATION (Only OmniVest Logo & Brand Name) -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
-                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">INR</span>
-                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Travel Planner</span>
+            <span class="navbar-brand fw-extrabold fs-3 text-dark d-flex align-items-center mb-0">
+                <span class="omnivest-logo-icon me-2">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="navCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#2c4d79"/>
+                                <stop offset="100%" stop-color="#1e3557"/>
+                            </linearGradient>
+                            <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#10b981"/>
+                                <stop offset="100%" stop-color="#34d399"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="48" fill="url(#navCircleGrad)" stroke="#e2e8f0" stroke-width="2"/>
+                        <rect x="28" y="58" width="10" height="24" rx="5" fill="url(#barGrad)"/>
+                        <rect x="44" y="46" width="10" height="36" rx="5" fill="url(#barGrad)"/>
+                        <rect x="60" y="38" width="10" height="44" rx="5" fill="url(#barGrad)"/>
+                        <path d="M25 61 L58 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M47 25 L65 24 L62 42 Z" fill="#ffffff"/>
+                    </svg>
+                </span>
+                OmniVest
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -198,14 +232,33 @@
         <div id="authView" class="row justify-content-center my-4">
             <div class="col-md-5">
                 <div class="card-custom p-4 p-md-5">
+                    <!-- CLEAN LOGIN HEADER (Matching Aesthetic) -->
                     <div class="text-center mb-4">
-                        <div class="d-inline-flex gap-2 mb-2">
-                            <span class="badge bg-success-subtle text-success border fs-5">₹</span>
-                            <span class="badge bg-primary-subtle text-primary border fs-5">$</span>
-                            <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
+                        <div class="mb-3">
+                            <span class="omnivest-logo-icon">
+                                <svg width="76" height="76" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="loginCircleGrad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stop-color="#2c4d79"/>
+                                            <stop offset="100%" stop-color="#1e3557"/>
+                                        </linearGradient>
+                                        <linearGradient id="loginBarGrad" x1="0" y1="1" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stop-color="#10b981"/>
+                                            <stop offset="100%" stop-color="#34d399"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="50" r="48" fill="url(#loginCircleGrad)" stroke="#cbd5e1" stroke-width="2"/>
+                                    <rect x="28" y="58" width="10" height="24" rx="5" fill="url(#loginBarGrad)"/>
+                                    <rect x="44" y="46" width="10" height="36" rx="5" fill="url(#loginBarGrad)"/>
+                                    <rect x="60" y="38" width="10" height="44" rx="5" fill="url(#loginBarGrad)"/>
+                                    <path d="M25 61 L58 28" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+                                    <path d="M47 25 L65 24 L62 42 Z" fill="#ffffff"/>
+                                </svg>
+                            </span>
                         </div>
-                        <h4 class="fw-bold">Sign In to OmniVest</h4>
-                        <p class="text-muted small">Select your portal to proceed.</p>
+                        <h3 class="fw-extrabold mb-1 text-dark">OmniVest</h3>
+                        <p class="text-success small fw-bold mb-2" style="font-size: 0.88rem; letter-spacing: 0.4px;">"Invest Today. Secure Tomorrow."</p>
+                        <p class="text-muted small">Sign in to access your portfolio management console.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
@@ -232,7 +285,7 @@
                                 <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
                             </div>
                             <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
-                                Enter Planner (INR)
+                                Enter Console (INR)
                             </button>
                         </div>
 
@@ -291,7 +344,7 @@
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE BANNER (Only displayed for Admin) -->
+            <!-- ADMIN NOTICE BANNER -->
             <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
@@ -304,7 +357,7 @@
                 </div>
             </div>
 
-            <!-- CUSTOMER-ONLY PLANNER SECTION (Completely hidden for Admin) -->
+            <!-- CUSTOMER-ONLY PLANNER SECTION -->
             <div id="customerPlannerSection" class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
@@ -417,7 +470,7 @@
                 </div>
             </div>
 
-            <!-- Ledger Records (Accessible to Both; Admin sees all users) -->
+            <!-- Ledger Records -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
@@ -583,11 +636,9 @@
             document.getElementById('dashboardView').style.display = 'block';
 
             if (isAdmin) {
-                // Hide planner and options entirely for Admin
                 document.getElementById('customerPlannerSection').classList.add('d-none');
                 document.getElementById('adminNoticeBanner').classList.remove('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Supervisory Audit Console";
                 document.getElementById('statPortfoliosLabel').innerText = "Total User Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Total Platform Principal";
                 document.getElementById('statGainLabel').innerText = "Total Platform Gain";
@@ -596,11 +647,9 @@
                 document.getElementById('ledgerTitleText').innerText = "Platform-Wide User Portfolios";
                 document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (INR)`;
             } else {
-                // Show planner for Customer
                 document.getElementById('customerPlannerSection').classList.remove('d-none');
                 document.getElementById('adminNoticeBanner').classList.add('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Wealth & Travel Planner";
                 document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
                 document.getElementById('statGainLabel').innerText = "Projected Profit";
