@@ -42,6 +42,7 @@
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; }
 
+        /* REAL-TIME MARKET TICKER */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -110,6 +111,7 @@
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
+        /* CURRENCY SYMBOLS ANIMATION */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -164,6 +166,7 @@
 </head>
 <body>
 
+    <!-- Currency Loader -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -187,7 +190,7 @@
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center">
                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle me-2 px-3 py-2 fs-6">INR</span>
-                OmniVest <span class="badge bg-primary ms-2 fs-6" id="navRoleBadge">Wealth & Travel Planner</span>
+                OmniVest <span class="badge bg-primary ms-2 fs-6">Wealth & Travel Planner</span>
             </span>
             <div id="navUserArea"></div>
         </div>
@@ -205,7 +208,7 @@
                             <span class="badge bg-warning-subtle text-warning border fs-5">€</span>
                         </div>
                         <h4 class="fw-bold">Sign In to OmniVest</h4>
-                        <p class="text-muted small">Select your portal to proceed.</p>
+                        <p class="text-muted small">Access your multi-asset portfolio and goal strategy engine.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-fill mb-4" id="loginTabList" role="tablist">
@@ -263,49 +266,35 @@
 
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
-            <!-- Summary Stats -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-1 p-3 text-center">
-                        <small class="text-primary fw-bold" id="statPortfoliosLabel">Active Plans</small>
+                        <small class="text-primary fw-bold">Active Plans</small>
                         <div class="fs-3 fw-extrabold text-dark mt-1" id="statPortfolios">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-2 p-3 text-center">
-                        <small class="text-success fw-bold" id="statPrincipalLabel">Invested Principal</small>
+                        <small class="text-success fw-bold">Invested Principal</small>
                         <div class="fs-3 fw-extrabold text-success mt-1" id="statPrincipal">₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-3 p-3 text-center">
-                        <small class="text-warning-emphasis fw-bold" id="statGainLabel">Projected Profit</small>
+                        <small class="text-warning-emphasis fw-bold">Projected Profit</small>
                         <div class="fs-3 fw-extrabold text-dark mt-1" id="statGain">+₹0</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-4 p-3 text-center">
-                        <small class="text-danger fw-bold" id="statMaturityLabel">Final Corpus</small>
+                        <small class="text-danger fw-bold">Final Corpus</small>
                         <div class="fs-3 fw-extrabold text-danger mt-1" id="statMaturity">₹0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE BANNER (Only displayed for Admin) -->
-            <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Administrative Oversight Mode</h6>
-                        <span class="small text-secondary">
-                            You are reviewing all investor portfolios submitted across the platform. Investment planning tools are disabled for supervisory accounts.
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CUSTOMER-ONLY PLANNER SECTION (Completely hidden for Admin) -->
-            <div id="customerPlannerSection" class="row g-4 mb-4">
+            <!-- Planner Form -->
+            <div class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
@@ -319,6 +308,7 @@
                             </select>
                         </div>
 
+                        <!-- Travel Style (Clean Text Without Emojis) -->
                         <div class="mb-3" id="travelStyleContainer">
                             <label class="form-label small fw-bold text-muted">Travel Style / Comfort Level</label>
                             <select id="travelStyleInput" class="form-select border-primary-subtle">
@@ -328,6 +318,7 @@
                             </select>
                         </div>
 
+                        <!-- Risk Preference (Clean Text Without Emojis) -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
                             <select id="riskTierInput" class="form-select border-info-subtle">
@@ -336,7 +327,7 @@
                                 <option value="high">High Risk (Aggressive Compounding: High equity exposure and digital assets)</option>
                             </select>
                             <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
-                                Gemini AI dynamically calculates asset weights based on duration and market trends.
+                                Gemini AI dynamically calculates asset weights based on current market trends.
                             </small>
                         </div>
 
@@ -366,7 +357,7 @@
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
+                            <p>Configure parameters on the left. The AI will evaluate live market trends and craft a customized strategy.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
@@ -417,7 +408,7 @@
                 </div>
             </div>
 
-            <!-- Ledger Records (Accessible to Both; Admin sees all users) -->
+            <!-- Ledger Records -->
             <div class="card-custom p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
@@ -469,7 +460,6 @@
     <script>
         let activePlan = null;
         let lastPrices = {};
-        let currentUserIsAdmin = false;
 
         function showLoading(msg = "Crunching numbers...") {
             document.getElementById('loadingText').innerText = msg;
@@ -566,8 +556,16 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    currentUserIsAdmin = !!data.is_admin;
-                    applyUserInterface(data.username, currentUserIsAdmin);
+                    document.getElementById('authView').style.display = 'none';
+                    document.getElementById('dashboardView').style.display = 'block';
+                    document.getElementById('navUserArea').innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
+                                ${data.username} ${data.is_admin ? '(Admin)' : ''}
+                            </span>
+                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
+                        </div>
+                    `;
                     loadLedger();
                 } else {
                     document.getElementById('authError').innerText = data.message;
@@ -578,63 +576,19 @@
             }
         }
 
-        function applyUserInterface(username, isAdmin) {
-            document.getElementById('authView').style.display = 'none';
-            document.getElementById('dashboardView').style.display = 'block';
-
-            if (isAdmin) {
-                // Hide planner and options entirely for Admin
-                document.getElementById('customerPlannerSection').classList.add('d-none');
-                document.getElementById('adminNoticeBanner').classList.remove('d-none');
-                
-                document.getElementById('navRoleBadge').innerText = "Supervisory Audit Console";
-                document.getElementById('statPortfoliosLabel').innerText = "Total User Plans";
-                document.getElementById('statPrincipalLabel').innerText = "Total Platform Principal";
-                document.getElementById('statGainLabel').innerText = "Total Platform Gain";
-                document.getElementById('statMaturityLabel').innerText = "Total Portfolio Value";
-                
-                document.getElementById('ledgerTitleText').innerText = "Platform-Wide User Portfolios";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (INR)`;
-            } else {
-                // Show planner for Customer
-                document.getElementById('customerPlannerSection').classList.remove('d-none');
-                document.getElementById('adminNoticeBanner').classList.add('d-none');
-                
-                document.getElementById('navRoleBadge').innerText = "Wealth & Travel Planner";
-                document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
-                document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
-                document.getElementById('statGainLabel').innerText = "Projected Profit";
-                document.getElementById('statMaturityLabel').innerText = "Final Corpus";
-                
-                document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
-                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download My CSV (INR)`;
-            }
-
-            document.getElementById('navUserArea').innerHTML = `
-                <div class="d-flex align-items-center">
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm px-3 py-2 border me-2 fw-bold">
-                        ${username} ${isAdmin ? '(Admin)' : ''}
-                    </span>
-                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="logout()">Sign Out</button>
-                </div>
-            `;
-        }
-
         async function logout() {
             await fetch('/api/logout', { method: 'POST' });
             location.reload();
         }
 
         async function computeAiPlan() {
-            if (currentUserIsAdmin) return;
-
             const mode = document.getElementById('planningMode').value;
             const years = document.getElementById('yearsInput').value;
             const rawVal = document.getElementById('statementInput').value;
             const travel_style = document.getElementById('travelStyleInput').value;
             const risk_tier = document.getElementById('riskTierInput').value;
 
-            showLoading("Gemini AI is analyzing duration and market data...");
+            showLoading("Gemini AI is analyzing live market data...");
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -675,7 +629,7 @@
         }
 
         function openTncModal() {
-            if (!activePlan || currentUserIsAdmin) return;
+            if (!activePlan) return;
             document.getElementById('agreeTncCheck').checked = false;
             document.getElementById('confirmDealModalBtn').disabled = true;
             const modal = new bootstrap.Modal(document.getElementById('tncModal'));
@@ -688,7 +642,7 @@
         }
 
         async function executeConfirmedDeal() {
-            if (!activePlan || currentUserIsAdmin) return;
+            if (!activePlan) return;
             
             const modalEl = document.getElementById('tncModal');
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
@@ -715,6 +669,17 @@
         }
 
         async function loadLedger() {
+            const sessionRes = await fetch('/api/current-session');
+            const sessionData = await sessionRes.json();
+            
+            if (sessionData.is_admin) {
+                document.getElementById('ledgerTitleText').innerText = "GLOBAL AUDIT VAULT (All Users)";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download Global Master CSV (INR)`;
+            } else {
+                document.getElementById('ledgerTitleText').innerText = "My Saved Portfolios";
+                document.getElementById('csvDownloadBtn').innerHTML = `<i class="fa-solid fa-file-excel me-1"></i> Download My CSV (INR)`;
+            }
+
             const res = await fetch('/api/my-ledger');
             const data = await res.json();
             document.getElementById('statPortfolios').innerText = data.summary.active_portfolios;
@@ -724,12 +689,6 @@
 
             const container = document.getElementById('ledgerContainer');
             container.innerHTML = '';
-
-            if (!data.records || data.records.length === 0) {
-                container.innerHTML = `<div class="text-center py-4 text-muted">No investor portfolios recorded yet.</div>`;
-                return;
-            }
-
             data.records.forEach(item => {
                 const tx = item.tx;
                 let breakdownHtml = '';
@@ -742,9 +701,8 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
                                 <span class="badge rounded-pill bg-primary px-3 py-1">Plan #${item.record_id}</span>
-                                <span class="badge rounded-pill bg-dark text-white border ms-1">Investor: ${tx.user}</span>
+                                <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.user}</span>
                                 <span class="badge rounded-pill bg-info-subtle text-info border ms-1">${tx.travel_style || 'Standard'}</span>
-                                <span class="badge rounded-pill bg-light text-secondary border ms-1">${tx.duration_days || 7} Days</span>
                             </div>
                             <small class="text-muted fw-semibold">${item.timestamp}</small>
                         </div>
@@ -755,7 +713,7 @@
                             <div class="col-4"><div class="p-2 rounded-3 bg-light border"><small class="text-muted d-block fw-bold">Tenure</small><strong>${tx.tenure_years} yrs</strong></div></div>
                         </div>
                         <div id="details_${item.record_id}" class="expanded-details small text-secondary">
-                            <strong class="text-dark">Investor Risk Profile & Allocation (${tx.risk_profile}):</strong>
+                            <strong class="text-dark">Detailed Asset Distribution (${tx.risk_profile}):</strong>
                             <ul class="mb-0 mt-1 ps-3">${breakdownHtml}</ul>
                         </div>
                     </div>
