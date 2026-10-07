@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniVest | Live AI Wealth & Goal Planner (INR)</title>
-    <!-- Fonts & Frameworks -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +29,6 @@
             overflow-x: hidden;
         }
 
-        /* Glassmorphism Cards */
         .card-custom {
             background: var(--surface-card);
             border: 2px solid #e0e7ff;
@@ -42,13 +40,11 @@
             box-shadow: 0 18px 36px -8px rgba(79, 70, 229, 0.12);
         }
 
-        /* Stat Counter Boxes */
         .stat-box-1 { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #a5b4fc; border-radius: 20px; }
         .stat-box-2 { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 2px solid #86efac; border-radius: 20px; }
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; border-radius: 20px; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; border-radius: 20px; }
 
-        /* Dynamic Live Ticker Bar */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -72,19 +68,11 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.03);
             transition: background 0.3s ease, transform 0.2s ease;
         }
-        .price-flash-up {
-            background: #dcfce7 !important;
-            transform: scale(1.04);
-        }
-        .price-flash-down {
-            background: #ffe4e6 !important;
-            transform: scale(1.04);
-        }
-
+        .price-flash-up { background: #dcfce7 !important; transform: scale(1.04); }
+        .price-flash-down { background: #ffe4e6 !important; transform: scale(1.04); }
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
-        /* Buttons & Highlights */
         .btn-brand {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #fff;
@@ -110,11 +98,6 @@
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
         }
-        .btn-confirm-deal:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 22px -3px rgba(16, 185, 129, 0.45);
-            color: #fff;
-        }
 
         .form-control, .form-select {
             border-radius: 14px;
@@ -128,7 +111,6 @@
             box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
         }
 
-        /* Loading Screen */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -188,7 +170,6 @@
 </head>
 <body>
 
-    <!-- Loading Modal Overlay -->
     <div id="loadingOverlay">
         <div class="currency-spread">
             <div class="currency-badge curr-inr">₹</div>
@@ -208,7 +189,6 @@
         </div>
     </div>
 
-    <!-- Navigation Header -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
             <span class="navbar-brand fw-extrabold fs-4 text-dark d-flex align-items-center mb-0">
@@ -345,7 +325,6 @@
                             </select>
                         </div>
 
-                        <!-- Budget Scale -->
                         <div class="mb-3" id="travelStyleContainer">
                             <label class="form-label small fw-bold text-muted">Budget Level</label>
                             <select id="travelStyleInput" class="form-select border-primary-subtle">
@@ -355,7 +334,6 @@
                             </select>
                         </div>
 
-                        <!-- Risk Preference -->
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
                             <select id="riskTierInput" class="form-select border-info-subtle">
@@ -368,7 +346,6 @@
                             </small>
                         </div>
 
-                        <!-- Goal Container -->
                         <div class="mb-3" id="inputContainer">
                             <label class="form-label small fw-bold text-muted">Goal</label>
                             <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
@@ -666,7 +643,17 @@
                 return;
             }
 
-            showLoading("Gemini AI is analyzing duration and market data...");
+            // CRITICAL FIX: Instantly clear stale UI so prior results never display on delay
+            activePlan = null;
+            document.getElementById('aiReady').style.display = 'none';
+            document.getElementById('aiEmpty').style.display = 'block';
+
+            showLoading("Gemini AI is analyzing your goal and current markets...");
+
+            // Fetch controller with 15s abort deadline
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
                 let input_val = (mode !== 'goal') ? (parseFloat(rawVal) || 0) : 0;
@@ -674,9 +661,17 @@
                 const res = await fetch('/api/analyze', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({mode, years, statement, input_val, travel_style, risk_tier}) 
+                    body: JSON.stringify({mode, years, statement, input_val, travel_style, risk_tier}),
+                    signal: controller.signal
                 });
-                const { data } = await res.json();
+                clearTimeout(timeoutId);
+
+                const jsonResp = await res.json();
+                if (!res.ok || jsonResp.status !== 'success') {
+                    throw new Error(jsonResp.message || "Failed to analyze portfolio.");
+                }
+
+                const data = jsonResp.data;
                 activePlan = data;
 
                 const budgetMap = { 'budget': 'Low Budget', 'mid': 'Mid Budget', 'luxury': 'High Budget' };
@@ -704,6 +699,14 @@
                         </tr>
                     `;
                 }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.error("Analysis Error:", err);
+                alert(err.name === 'AbortError' 
+                    ? "Network timeout: The model took too long to respond. Please try again." 
+                    : "Error calculating plan: " + err.message);
+                document.getElementById('aiEmpty').style.display = 'block';
+                document.getElementById('aiReady').style.display = 'none';
             } finally {
                 hideLoading();
             }
