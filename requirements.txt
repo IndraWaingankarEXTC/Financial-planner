@@ -1,4 +1,4 @@
-Flask
-yfinance
-gunicorn
-google-genai
+Flask>=3.0.0
+google-genai>=0.1.1
+yfinance>=0.2.36
+gunicorn>=21.2.0
