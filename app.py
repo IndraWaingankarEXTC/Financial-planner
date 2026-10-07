@@ -120,11 +120,13 @@ def fetch_live_market_summary():
     return summary
 
 def call_ai_financial_planner(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier, market_snapshot):
-    if not (GENAI_AVAILABLE and GEMINI_API_KEY):
+    api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
+    if not api_key:
+        print("[OmniVest Error] No GEMINI_API_KEY found.")
         return None
 
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        client = genai.Client(api_key=api_key)
         prompt = f"""
 You are an expert quantitative financial research advisor and autonomous pricing intelligence engine.
 All calculated monetary figures must be in Indian Rupees (INR / ₹).
@@ -167,17 +169,39 @@ Return strictly raw JSON format without code fences:
   }}
 }}
 """
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json")
-        )
+        # Cascade through active models to handle 503 capacity spikes
+        models_to_try = [
+            "gemini-3.7-flash",
+            "gemini-3.8-flash",
+            "gemini-3.6-flash",
+            "gemini-3.5-flash"
+        ]
+
+        response = None
+        for m in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=m,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(response_mime_type="application/json")
+                )
+                if response and response.text:
+                    print(f"[OmniVest AI Success] Handled by model: {m}")
+                    break
+            except Exception as model_err:
+                print(f"[OmniVest Notice] {m} unavailable ({model_err}). Trying next fallback...")
+                continue
+
+        if not response or not response.text:
+            return None
+
         raw_text = response.text.strip()
         cleaned_text = re.sub(r'^```json\s*', '', raw_text)
         cleaned_text = re.sub(r'\s*```$', '', cleaned_text)
         return json.loads(cleaned_text)
+
     except Exception as e:
-        print(f"Gemini API Error: {e}")
+        print(f"[OmniVest Call Failed] {e}")
         return None
 
 # ==========================================
