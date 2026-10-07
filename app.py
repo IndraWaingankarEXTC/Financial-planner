@@ -138,57 +138,57 @@ def fetch_live_market_summary():
 # AI DYNAMIC PORTFOLIO ALLOCATION
 # ==========================================
 def call_ai_financial_planner(intent_text, tenure_years, duration_days, mode, budget_or_corpus, travel_style, risk_tier, market_snapshot):
-    if not (GENAI_AVAILABLE and GEMINI_API_KEY):
+    if not GENAI_AVAILABLE:
+        print("[OmniVest Error] google-genai library is not installed or imported!")
+        return None
+    if not GEMINI_API_KEY:
+        print("[OmniVest Error] GEMINI_API_KEY environment variable is empty or not found!")
         return None
 
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
+        
         prompt = f"""
-You are an advanced quantitative financial advisor and travel cost estimator.
-The investor is based in India and all monetary figures are in Indian Rupees (₹ / INR).
+You are an expert global travel economist and quantitative wealth manager.
+The investor is traveling from India and investing in Indian Rupees (INR / ₹).
 
-Current Live Market Conditions (yFinance):
-{json.dumps(market_snapshot, indent=2)}
+User Request: "{intent_text}"
+Trip Duration: {duration_days} days
+Planning Mode: {mode}
+Investment Horizon (Tenure): {tenure_years} years
+Selected Travel Style: {travel_style} (budget, mid, or luxury)
+Selected Risk Profile: {risk_tier} (low, mid, or high)
+Current Indian Market Trends: {json.dumps(market_snapshot)}
 
-User Goals & Input Parameters:
-- Statement: "{intent_text}"
-- Extracted Duration: {duration_days} DAYS (CRITICAL: Scale expenses directly by this number of days)
-- Planning Mode: {mode} (goal = trip planning, budget = monthly budget, corpus = target payout)
-- Input Value: {budget_or_corpus}
-- Tenure: {tenure_years} years
-- Travel Comfort Style: {travel_style} (budget, mid, or luxury)
-- Risk Profile: {risk_tier} (low, mid, or high)
+Instructions:
+1. Identify the exact destination country/city mentioned in "{intent_text}". (e.g., Japan, Peru, Iceland, Vietnam, Switzerland, Kenya, etc.)
+2. Determine:
+   - Destination's official currency and current economic living costs.
+   - Realistic return flight ticket from India in INR.
+   - Realistic daily expenses in INR for {travel_style} travel (hotel/hostel, meals, local transport, entrance fees).
+   - Expected local inflation rate over the next {tenure_years} years.
+3. Compute total budget:
+   - Base Trip Cost = Round-trip flight + (Daily cost * {duration_days} days).
+   - Target Corpus = Base Trip Cost adjusted for expected inflation over {tenure_years} years + a 10% contingency buffer.
+4. Dynamically distribute asset percentages matching the risk profile ('{risk_tier}') and current market conditions across:
+   - Stock_Market_Index
+   - Mutual_Funds
+   - Real_Estate_REITs
+   - Gold_Precious_Metals
+   - Cryptocurrency_BTC
+   (Must sum to exactly 100%).
 
-MANDATORY COST CALCULATION FORMULA (For mode == 'goal'):
-1. Flight Cost (Round-trip from India): One-time fixed cost for the destination.
-2. Per-Day Living Cost (Hotel/Stay + Food + Local Transit + Sightseeing):
-   - Budget: Minimal hostels, local transit, street/casual food.
-   - Mid-range: 3-4 star hotels, city transit, casual dining, entry tickets.
-   - Luxury: 4-5 star hotels, private cabs, fine dining.
-3. Base Cost = Flight Cost + (Per-Day Living Cost * {duration_days} days).
-   * Notice: 100 days MUST cost vastly more than 10 days because accommodation and food multiply by {duration_days}.
-4. Final Target Corpus = Base Cost * ((1 + 0.04) ** {tenure_years}) * 1.10 (4% annual inflation + 10% safety buffer).
-
-ASSET ALLOCATION INSTRUCTIONS:
-- Evaluate live market snapshot and the selected risk preference ('{risk_tier}').
-- Decide percentage weights for:
-  * Stock_Market_Index
-  * Mutual_Funds
-  * Real_Estate_REITs
-  * Gold_Precious_Metals
-  * Cryptocurrency_BTC
-  (Sum of these 5 percentages MUST EQUAL EXACTLY 100).
-- Estimate realistic portfolio annual CAGR (e.g. 0.08 to 0.18) based on your custom mix.
-
-Return strictly raw JSON format (no markdown, no backticks):
+Return strictly valid JSON without markdown fences (no ```json):
 {{
-  "destination_title": "string (e.g., '{duration_days}-Day Netherlands Trip')",
-  "target_corpus": number,
-  "daily_cost_inr": number,
+  "destination_title": "{duration_days}-Day Trip to [Identified Country/City]",
+  "identified_country": "Country Name",
+  "local_currency": "Currency Code",
   "flight_cost_inr": number,
+  "daily_cost_inr": number,
+  "target_corpus": number,
   "expected_annual_rate": number,
-  "risk_profile_description": "string",
-  "ai_rationale": "Detail the flight cost, per-day cost * {duration_days} days, inflation, and rationale for asset distribution",
+  "risk_profile_description": "Custom risk profile description",
+  "ai_rationale": "Clear breakdown explaining flight costs, daily stay in local currency converted to INR, inflation rates, and asset split rationale.",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -198,16 +198,28 @@ Return strictly raw JSON format (no markdown, no backticks):
   }}
 }}
 """
+
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json")
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.2
+            )
         )
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"Gemini AI Dynamic Error: {e}")
-        return None
+        
+        # Clean any accidental formatting fences
+        text = response.text.strip()
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        
+        return json.loads(text.strip())
 
+    except Exception as e:
+        print(f"[OmniVest Error] Gemini API call failed: {str(e)}")
+        return None
 # ==========================================
 # API ENDPOINTS
 # ==========================================
