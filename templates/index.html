@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniVest | Live AI Wealth & Goal Planner</title>
+    <title>OmniVest | Invest Today. Secure Tomorrow.</title>
     <!-- Fonts & Frameworks -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,7 +14,6 @@
     <style>
         :root {
             --surface-card: #ffffff;
-            /* Subtle blue palette shift: Clean Cobalt / Slate Blue */
             --primary-blue: #2563eb;
             --primary-deep: #1d4ed8;
             --primary-light: #dbeafe;
@@ -93,7 +92,7 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             cursor: pointer;
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
@@ -102,20 +101,20 @@
             transform: translateY(-1px);
         }
         .brand-logo-img {
-            height: 48px;
+            height: 64px; /* Enlarged logo */
             width: auto;
-            max-width: 140px;
+            max-width: 200px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 14px;
         }
         .brand-tagline {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #64748b;
-            letter-spacing: 0.5px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
             display: block;
-            margin-top: -2px;
+            margin-top: 2px;
         }
 
         /* Buttons & Highlights */
@@ -242,25 +241,18 @@
         </div>
     </div>
 
-    <!-- Navigation Header with Clickable Logo, Brand Title, & Tagline -->
+    <!-- Navigation Header -->
     <nav class="navbar py-3 mb-2">
         <div class="container d-flex justify-content-between align-items-center">
             <a href="/" class="brand-link" title="Return to OmniVest Home">
-                <!-- Replace /static/logo.png with your exact logo image path once uploaded -->
                 <img src="/static/logo.png" 
                      id="brandLogo" 
                      class="brand-logo-img" 
                      alt="OmniVest Logo"
-                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 48 48\'><rect width=\'48\' height=\'48\' rx=\'12\' fill=\'%232563eb\'/><path d=\'M24 14L34 32H14Z\' fill=\'%23ffffff\'/></svg>';">
+                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\' viewBox=\'0 0 64 64\'><rect width=\'64\' height=\'64\' rx=\'16\' fill=\'%232563eb\'/><path d=\'M32 18L46 44H18Z\' fill=\'%23ffffff\'/></svg>';">
                 <div>
-                    <div class="d-flex align-items-center">
-                        <span class="fw-extrabold fs-4 text-dark me-2">OmniVest</span>
-                        <span class="badge bg-primary fs-6" id="navRoleBadge" style="background-color: var(--primary-blue) !important;">
-                            Wealth & Goal Planner
-                        </span>
-                    </div>
-                    <!-- Your customizable brand tagline directly under the logo title -->
-                    <span class="brand-tagline" id="brandTagline">Intelligent Wealth, Tailored to Your Goals</span>
+                    <span class="fw-extrabold fs-3 text-dark d-block lh-sm">OmniVest</span>
+                    <span class="brand-tagline">Invest Today. Secure Tomorrow.</span>
                 </div>
             </a>
             <div id="navUserArea"></div>
@@ -663,7 +655,6 @@
                 document.getElementById('customerPlannerSection').classList.add('d-none');
                 document.getElementById('adminNoticeBanner').classList.remove('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Supervisory Audit Console";
                 document.getElementById('statPortfoliosLabel').innerText = "Total User Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Total Platform Principal";
                 document.getElementById('statGainLabel').innerText = "Total Platform Gain";
@@ -675,7 +666,6 @@
                 document.getElementById('customerPlannerSection').classList.remove('d-none');
                 document.getElementById('adminNoticeBanner').classList.add('d-none');
                 
-                document.getElementById('navRoleBadge').innerText = "Wealth & Goal Planner";
                 document.getElementById('statPortfoliosLabel').innerText = "Active Plans";
                 document.getElementById('statPrincipalLabel').innerText = "Invested Principal";
                 document.getElementById('statGainLabel').innerText = "Projected Profit";
@@ -714,7 +704,7 @@
                 return;
             }
 
-            // Instantly clear old results
+            // Clear previous results immediately
             activePlan = null;
             document.getElementById('aiReady').style.display = 'none';
             document.getElementById('aiEmpty').style.display = 'block';
