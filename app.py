@@ -169,9 +169,25 @@ Return strictly raw JSON format without markdown code fences:
   }}
 }}"""
 
-        # Strict cascade: 3.8 -> 3.7 -> 3.5
+        # Model hierarchy: 3.8 -> 3.7 -> 3.5
         model_hierarchy = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"]
         response = None
+
+        # Build config: Disable thinking tokens to prevent truncation and set generous max tokens
+        try:
+            gen_config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                max_output_tokens=1000,
+                temperature=0.1,
+                thinking_config=types.ThinkingConfig(thinking_budget=0)
+            )
+        except Exception:
+            # Fallback if SDK version doesn't support thinking_config
+            gen_config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                max_output_tokens=1000,
+                temperature=0.1
+            )
 
         for model_choice in model_hierarchy:
             try:
@@ -179,11 +195,7 @@ Return strictly raw JSON format without markdown code fences:
                 response = client.models.generate_content(
                     model=model_choice,
                     contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        max_output_tokens=300,
-                        temperature=0.1
-                    )
+                    config=gen_config
                 )
                 if response and response.text:
                     print(f"[OmniVest API SUCCESS] Model '{model_choice}' succeeded.")
@@ -192,14 +204,20 @@ Return strictly raw JSON format without markdown code fences:
                 print(f"[OmniVest Notice] {model_choice} failed/spiked ({m_err}). Moving to next model...")
                 continue
 
-        # If none of the 3 models were able to respond
         if not response or not response.text:
             return {"server_spiked": True}
 
         raw_text = response.text.strip()
         cleaned_text = re.sub(r'^```json\s*', '', raw_text)
         cleaned_text = re.sub(r'\s*```$', '', cleaned_text)
-        return json.loads(cleaned_text)
+        
+        # Robust parsing to catch any unescaped edge cases
+        try:
+            return json.loads(cleaned_text)
+        except json.JSONDecodeError:
+            # Fallback cleanup for edge-case string escapes
+            cleaned_text = cleaned_text.replace('\n', ' ')
+            return json.loads(cleaned_text)
 
     except Exception as e:
         print(f"[OmniVest Critical Exception]: {e}")
