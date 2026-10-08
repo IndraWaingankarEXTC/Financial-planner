@@ -21,9 +21,9 @@ USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
 GLOBAL_CSV_FILE = "global_master_investments.csv"
 
-# In-memory cache for market tickers to prevent 3-6s yfinance network lag
+# In-memory ticker cache (10 min TTL) to avoid 3-5s yfinance network delay per query
 MARKET_CACHE = {"data": None, "timestamp": 0}
-CACHE_TTL = 600  # 10 minutes
+CACHE_TTL = 600
 
 def load_users():
     if os.path.exists(USERS_FILE):
@@ -131,33 +131,37 @@ def fetch_live_market_summary():
 
 def call_ai_financial_planner_fast(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier):
     if not GENAI_AVAILABLE:
+        print("[OmniVest Error] google-genai is not installed.")
         return None
 
     api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
     if not api_key:
+        print("[OmniVest Error] GEMINI_API_KEY is not set.")
         return None
 
     try:
         client = genai.Client(api_key=api_key)
 
-        prompt = f"""You are a high-speed financial pricing estimator. All numbers in INR (₹).
-User Goal: "{intent_text}"
-Tier: {budget_level}
-Risk: {risk_tier}
-Tenure: {tenure_years} yrs
+        prompt = f"""You are an ultra-fast quantitative pricing calculator. All values in Indian Rupees (INR / ₹).
+Inputs:
+- Goal: "{intent_text}"
+- Budget Tier: {budget_level}
+- Risk Profile: {risk_tier}
+- Tenure: {tenure_years} years
 
-Calculate:
-1. Exact model/trip baseline present cost in INR.
-2. Compound at 5% inflation: target_corpus = present_cost * (1.05 ** {tenure_years}).
-3. Asset split (sum to 100): Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
-4. Expected CAGR: 0.08 to 0.16.
+Task:
+1. Identify the exact purchase or goal. Estimate present baseline cost in INR.
+   (e.g., EV: model name + on-road price in India; Trip: flights + per-day living expenses in INR; General: standard market baseline).
+2. Apply 5% annual compound inflation: target_corpus = present_cost * (1.05 ** {tenure_years}).
+3. Allocate percentages summing to 100: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
+4. Estimate realistic portfolio CAGR (0.08 to 0.16).
 
-Return strictly raw JSON (no markdown):
+Return strictly raw JSON format without markdown code fences:
 {{
-  "destination_title": "Short title",
+  "destination_title": "Precise Item / Destination Name",
   "target_corpus": number,
   "expected_annual_rate": number,
-  "ai_rationale": "One brief sentence explaining cost, inflation, and strategy.",
+  "ai_rationale": "One concise sentence detailing baseline cost, inflation over {tenure_years} years, and portfolio split.",
   "allocation_pcts": {{
      "Stock_Market_Index": number,
      "Mutual_Funds": number,
@@ -167,15 +171,25 @@ Return strictly raw JSON (no markdown):
   }}
 }}"""
 
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                max_output_tokens=300,
-                temperature=0.1
-            )
-        )
+        # Primary model verified in Colab; fallback to 3.8 if needed
+        response = None
+        for model_choice in ["gemini-3.7-flash", "gemini-3.8-flash"]:
+            try:
+                response = client.models.generate_content(
+                    model=model_choice,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        max_output_tokens=300,
+                        temperature=0.1
+                    )
+                )
+                if response and response.text:
+                    print(f"[OmniVest API SUCCESS] Model {model_choice} responded.")
+                    break
+            except Exception as m_err:
+                print(f"[OmniVest Notice] {model_choice} failed: {m_err}")
+                continue
 
         if not response or not response.text:
             return None
@@ -186,7 +200,7 @@ Return strictly raw JSON (no markdown):
         return json.loads(cleaned_text)
 
     except Exception as e:
-        print(f"[OmniVest Speed Fallback Triggered]: {e}")
+        print(f"[OmniVest Fallback Triggered]: {e}")
         return None
 
 # ==========================================
@@ -194,12 +208,6 @@ Return strictly raw JSON (no markdown):
 # ==========================================
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
-    fallbacks = {
-        "Bitcoin (BTC)": {"price": 6250000.0, "change": 1.45, "status": "up"},
-        "NIFTY 50": {"price": 25200.0, "change": 0.40, "status": "up"},
-        "Gold (per 10g)": {"price": 78500.0, "change": -0.25, "status": "down"},
-        "BSE SENSEX": {"price": 82100.0, "change": 0.35, "status": "up"}
-    }
     summary = fetch_live_market_summary()
     live_data = {
         "Bitcoin (BTC)": {"price": summary.get("Bitcoin", {}).get("price", 6250000.0), "change": summary.get("Bitcoin", {}).get("change_pct", 1.45), "status": "up"},
@@ -256,7 +264,7 @@ def current_session():
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     if 'user' not in session: 
-        return jsonify({"status": "error", "message": "User session expired."}), 401
+        return jsonify({"status": "error", "message": "Session expired."}), 401
     
     if session.get('is_admin', False):
         return jsonify({"status": "error", "message": "Administrators cannot generate plans."}), 403
@@ -286,11 +294,11 @@ def analyze():
         sip_growth_factor = (((1 + r)**n - 1) / r) * (1 + r)
         target_corpus = round(monthly_sip * sip_growth_factor, 2)
         total_invested = round(monthly_sip * n, 2)
-        goal_title = f"Monthly SIP Plan (₹{monthly_sip:,.0f}/mo)"
+        goal_title = f"Monthly SIP Accumulator (₹{monthly_sip:,.0f}/mo)"
         risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
         allocation = default_allocations.get(risk_tier)
         ai_rationale = (f"Fixed monthly investment of ₹{monthly_sip:,.0f} compounding over {years} years. "
-                        f"At a projected CAGR of {expected_rate*100:.1f}%, accumulated value is ₹{target_corpus:,.0f}.")
+                        f"At a {risk_tier.capitalize()} CAGR of {expected_rate*100:.1f}%, your fund accumulates to ₹{target_corpus:,.0f}.")
 
     elif mode == 'corpus':
         target_corpus = max(input_val, 1000.0)
@@ -303,7 +311,7 @@ def analyze():
                         f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
 
     else:
-        # High-speed AI execution
+        # Fast AI Planner targeting gemini-3.7-flash directly
         ai_result = call_ai_financial_planner_fast(
             statement, years, mode, input_val, budget_level, risk_tier
         )
