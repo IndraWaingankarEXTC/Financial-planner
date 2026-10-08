@@ -21,7 +21,7 @@ USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
 GLOBAL_CSV_FILE = "global_master_investments.csv"
 
-# In-memory ticker cache (10 min TTL) to avoid 3-5s yfinance network delay per query
+# In-memory ticker cache to eliminate 3-5 second yfinance network lag
 MARKET_CACHE = {"data": None, "timestamp": 0}
 CACHE_TTL = 600
 
@@ -129,20 +129,18 @@ def fetch_live_market_summary():
     MARKET_CACHE["timestamp"] = now
     return summary
 
-def call_ai_financial_planner_fast(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier):
+def call_ai_financial_planner_cascaded(intent_text, tenure_years, mode, budget_or_corpus, budget_level, risk_tier):
     if not GENAI_AVAILABLE:
-        print("[OmniVest Error] google-genai is not installed.")
-        return None
+        return {"error": "google-genai library is not installed in the environment."}
 
     api_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
     if not api_key:
-        print("[OmniVest Error] GEMINI_API_KEY is not set.")
-        return None
+        return {"error": "GEMINI_API_KEY environment variable is missing on Render."}
 
     try:
         client = genai.Client(api_key=api_key)
 
-        prompt = f"""You are an ultra-fast quantitative pricing calculator. All values in Indian Rupees (INR / ₹).
+        prompt = f"""You are a high-speed quantitative pricing calculator. All values in Indian Rupees (INR / ₹).
 Inputs:
 - Goal: "{intent_text}"
 - Budget Tier: {budget_level}
@@ -150,7 +148,7 @@ Inputs:
 - Tenure: {tenure_years} years
 
 Task:
-1. Identify the exact purchase or goal. Estimate present baseline cost in INR.
+1. Identify the purchase or goal. Estimate present baseline cost in INR.
    (e.g., EV: model name + on-road price in India; Trip: flights + per-day living expenses in INR; General: standard market baseline).
 2. Apply 5% annual compound inflation: target_corpus = present_cost * (1.05 ** {tenure_years}).
 3. Allocate percentages summing to 100: Stock_Market_Index, Mutual_Funds, Real_Estate_REITs, Gold_Precious_Metals, Cryptocurrency_BTC.
@@ -171,10 +169,13 @@ Return strictly raw JSON format without markdown code fences:
   }}
 }}"""
 
-        # Primary model verified in Colab; fallback to 3.8 if needed
+        # Strict cascade: 3.8 -> 3.7 -> 3.5
+        model_hierarchy = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"]
         response = None
-        for model_choice in ["gemini-3.7-flash", "gemini-3.8-flash"]:
+
+        for model_choice in model_hierarchy:
             try:
+                print(f"[OmniVest] Requesting model: {model_choice}...")
                 response = client.models.generate_content(
                     model=model_choice,
                     contents=prompt,
@@ -185,14 +186,15 @@ Return strictly raw JSON format without markdown code fences:
                     )
                 )
                 if response and response.text:
-                    print(f"[OmniVest API SUCCESS] Model {model_choice} responded.")
+                    print(f"[OmniVest API SUCCESS] Model '{model_choice}' succeeded.")
                     break
             except Exception as m_err:
-                print(f"[OmniVest Notice] {model_choice} failed: {m_err}")
+                print(f"[OmniVest Notice] {model_choice} failed/spiked ({m_err}). Moving to next model...")
                 continue
 
+        # If none of the 3 models were able to respond
         if not response or not response.text:
-            return None
+            return {"server_spiked": True}
 
         raw_text = response.text.strip()
         cleaned_text = re.sub(r'^```json\s*', '', raw_text)
@@ -200,8 +202,8 @@ Return strictly raw JSON format without markdown code fences:
         return json.loads(cleaned_text)
 
     except Exception as e:
-        print(f"[OmniVest Fallback Triggered]: {e}")
-        return None
+        print(f"[OmniVest Critical Exception]: {e}")
+        return {"error": str(e)}
 
 # ==========================================
 # API ENDPOINTS
@@ -311,12 +313,26 @@ def analyze():
                         f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
 
     else:
-        # Fast AI Planner targeting gemini-3.7-flash directly
-        ai_result = call_ai_financial_planner_fast(
+        # Cascade through 3.8 -> 3.7 -> 3.5
+        ai_result = call_ai_financial_planner_cascaded(
             statement, years, mode, input_val, budget_level, risk_tier
         )
 
-        if ai_result and isinstance(ai_result, dict) and "target_corpus" in ai_result:
+        # Check if spiked across all 3 models
+        if isinstance(ai_result, dict) and ai_result.get("server_spiked"):
+            return jsonify({
+                "status": "error",
+                "message": "Currently the server is spiked with connections and we cannot calculate immediately. Please try again shortly."
+            }), 503
+
+        # Check for other errors
+        if isinstance(ai_result, dict) and "error" in ai_result:
+            return jsonify({
+                "status": "error",
+                "message": f"AI Connection issue: {ai_result['error']}"
+            }), 500
+
+        if ai_result and "target_corpus" in ai_result:
             goal_title = ai_result.get("destination_title", statement or "Custom Goal")
             target_corpus = float(ai_result.get("target_corpus", 350000))
             ai_rationale = ai_result.get("ai_rationale", "")
@@ -325,12 +341,10 @@ def analyze():
             expected_rate = float(ai_result.get("expected_annual_rate", expected_rate))
             r = expected_rate / 12
         else:
-            tier_cost = {"budget": 150000, "mid": 450000, "luxury": 1200000}.get(budget_level, 450000)
-            target_corpus = round(tier_cost * ((1.05) ** years), 2)
-            goal_title = statement if statement else "Custom Financial Goal"
-            risk_profile = f"{risk_tier.capitalize()} Risk Strategy"
-            allocation = default_allocations.get(risk_tier)
-            ai_rationale = f"Applied dynamic baseline of ₹{tier_cost:,} adjusted for {years} years at 5% annual inflation."
+            return jsonify({
+                "status": "error",
+                "message": "Currently the server is spiked with connections and we cannot calculate immediately."
+            }), 503
 
         monthly_sip = round(target_corpus / ( (((1 + r)**n - 1) / r) * (1 + r) ), 2)
         total_invested = round(monthly_sip * n, 2)
