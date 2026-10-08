@@ -297,7 +297,7 @@
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE BANNER -->
+            <!-- Admin Notice Banner -->
             <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
@@ -310,7 +310,7 @@
                 </div>
             </div>
 
-            <!-- CUSTOMER-ONLY PLANNER SECTION -->
+            <!-- Customer-Only Planner Section -->
             <div id="customerPlannerSection" class="row g-4 mb-4">
                 <div class="col-lg-5">
                     <div class="card-custom p-4 h-100">
@@ -643,16 +643,16 @@
                 return;
             }
 
-            // CRITICAL FIX: Instantly clear stale UI so prior results never display on delay
+            // Instantly clear old results
             activePlan = null;
             document.getElementById('aiReady').style.display = 'none';
             document.getElementById('aiEmpty').style.display = 'block';
 
             showLoading("Gemini AI is analyzing your goal and current markets...");
 
-            // Fetch controller with 15s abort deadline
+            // 30s timeout controller
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
 
             try {
                 let statement = (mode === 'goal') ? rawVal : '';
@@ -703,7 +703,7 @@
                 clearTimeout(timeoutId);
                 console.error("Analysis Error:", err);
                 alert(err.name === 'AbortError' 
-                    ? "Network timeout: The model took too long to respond. Please try again." 
+                    ? "Request timed out: Server took too long to respond. Please try again." 
                     : "Error calculating plan: " + err.message);
                 document.getElementById('aiEmpty').style.display = 'block';
                 document.getElementById('aiReady').style.display = 'none';
