@@ -19,9 +19,10 @@ app.secret_key = "omnivest_ai_dynamic_market_2026"
 
 USERS_FILE = "users.json"
 LEDGER_FILE = "ledger.json"
+CAS_FILE = "cas.json"
 GLOBAL_CSV_FILE = "global_master_investments.csv"
 
-# In-memory ticker cache to eliminate 3-5 second yfinance network lag
+# In-memory ticker cache (10 min TTL) to avoid repeated yfinance latency
 MARKET_CACHE = {"data": None, "timestamp": 0}
 CACHE_TTL = 600
 
@@ -34,6 +35,38 @@ def load_users():
 
 def save_users(users):
     with open(USERS_FILE, "w") as f: json.dump(users, f, indent=4)
+
+def load_cas():
+    if os.path.exists(CAS_FILE):
+        try:
+            with open(CAS_FILE, "r", encoding="utf-8") as f: return json.load(f)
+        except Exception: return []
+    # Default initial CAs if none exist
+    initial_cas = [
+        {
+            "id": 1,
+            "name": "CA Rajesh Kulkarni",
+            "email": "rajesh.kulkarni@omnivest.in",
+            "phone": "+91 98201 11223",
+            "experience": "12 Years",
+            "specialization": "Tax Planning & Equity Portfolios",
+            "resume": "FCA with 12+ years of experience in high-net-worth portfolio restructuring, capital gains optimization, and cross-border Indian tax compliance. Former Senior Manager at Deloitte Tax Advisory."
+        },
+        {
+            "id": 2,
+            "name": "CA Sneha Deshmukh",
+            "email": "sneha.deshmukh@omnivest.in",
+            "phone": "+91 98334 44556",
+            "experience": "8 Years",
+            "specialization": "Startup Valuation & Real Estate REITs",
+            "resume": "Chartered Accountant & CFA Level 2 candidate specializing in alternative asset taxation, real estate holding structures, and early-stage angel investments."
+        }
+    ]
+    save_cas(initial_cas)
+    return initial_cas
+
+def save_cas(cas):
+    with open(CAS_FILE, "w", encoding="utf-8") as f: json.dump(cas, f, indent=4)
 
 def get_user_csv_filename(username):
     safe_user = re.sub(r'[^a-zA-Z0-9_]', '_', username)
@@ -169,11 +202,9 @@ Return strictly raw JSON format without markdown code fences:
   }}
 }}"""
 
-        # Model hierarchy: 3.8 -> 3.7 -> 3.5
         model_hierarchy = ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash"]
         response = None
 
-        # Build config: Disable thinking tokens to prevent truncation and set generous max tokens
         try:
             gen_config = types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -182,7 +213,6 @@ Return strictly raw JSON format without markdown code fences:
                 thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
         except Exception:
-            # Fallback if SDK version doesn't support thinking_config
             gen_config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 max_output_tokens=1000,
@@ -191,7 +221,6 @@ Return strictly raw JSON format without markdown code fences:
 
         for model_choice in model_hierarchy:
             try:
-                print(f"[OmniVest] Requesting model: {model_choice}...")
                 response = client.models.generate_content(
                     model=model_choice,
                     contents=prompt,
@@ -210,12 +239,10 @@ Return strictly raw JSON format without markdown code fences:
         raw_text = response.text.strip()
         cleaned_text = re.sub(r'^```json\s*', '', raw_text)
         cleaned_text = re.sub(r'\s*```$', '', cleaned_text)
-        
-        # Robust parsing to catch any unescaped edge cases
+
         try:
             return json.loads(cleaned_text)
         except json.JSONDecodeError:
-            # Fallback cleanup for edge-case string escapes
             cleaned_text = cleaned_text.replace('\n', ' ')
             return json.loads(cleaned_text)
 
@@ -281,6 +308,51 @@ def logout():
 def current_session():
     return jsonify({"user": session.get('user'), "is_admin": session.get('is_admin', False)})
 
+# --- EXPERT CA ENDPOINTS ---
+@app.route('/api/cas', methods=['GET'])
+def get_cas():
+    return jsonify({"status": "success", "cas": load_cas()})
+
+@app.route('/api/admin/cas', methods=['POST'])
+def add_ca():
+    if not session.get('is_admin', False):
+        return jsonify({"status": "error", "message": "Admin authorization required."}), 403
+
+    data = request.json or {}
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    phone = data.get('phone', '').strip()
+    experience = data.get('experience', '5+ Years').strip()
+    specialization = data.get('specialization', 'Direct Tax & Wealth Audit').strip()
+    resume = data.get('resume', '').strip()
+
+    if not name or not phone or not email:
+        return jsonify({"status": "error", "message": "Name, email, and phone number are required."}), 400
+
+    cas = load_cas()
+    new_ca = {
+        "id": int(time.time() * 1000),
+        "name": name if name.startswith("CA") else f"CA {name}",
+        "email": email,
+        "phone": phone,
+        "experience": experience,
+        "specialization": specialization,
+        "resume": resume or "Certified Chartered Accountant specializing in personal taxation, portfolio wealth audits, and corporate compliance."
+    }
+    cas.append(new_ca)
+    save_cas(cas)
+    return jsonify({"status": "success", "ca": new_ca})
+
+@app.route('/api/admin/cas/<int:ca_id>', methods=['DELETE'])
+def delete_ca(ca_id):
+    if not session.get('is_admin', False):
+        return jsonify({"status": "error", "message": "Admin authorization required."}), 403
+
+    cas = load_cas()
+    filtered = [ca for ca in cas if ca.get('id') != ca_id]
+    save_cas(filtered)
+    return jsonify({"status": "success", "message": "CA removed successfully."})
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     if 'user' not in session: 
@@ -331,19 +403,16 @@ def analyze():
                         f"At {expected_rate*100:.1f}% annual CAGR, monthly SIP required is ₹{monthly_sip:,.0f}.")
 
     else:
-        # Cascade through 3.8 -> 3.7 -> 3.5
         ai_result = call_ai_financial_planner_cascaded(
             statement, years, mode, input_val, budget_level, risk_tier
         )
 
-        # Check if spiked across all 3 models
         if isinstance(ai_result, dict) and ai_result.get("server_spiked"):
             return jsonify({
                 "status": "error",
                 "message": "Currently the server is spiked with connections and we cannot calculate immediately. Please try again shortly."
             }), 503
 
-        # Check for other errors
         if isinstance(ai_result, dict) and "error" in ai_result:
             return jsonify({
                 "status": "error",
