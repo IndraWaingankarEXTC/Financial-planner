@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
     <title>OmniVest | Invest Today. Secure Tomorrow.</title>
+
     <!-- Fonts & Frameworks -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,24 +27,33 @@
             --button-radius: 16px;
         }
 
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
         body {
             background: radial-gradient(circle at 10% 20%, #f0f7ff 0%, #eff6ff 40%, #ecfdf5 90%);
             min-height: 100vh;
             color: var(--text-dark);
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Glassmorphism Cards */
+        /* Adaptive Glass Cards */
         .card-custom {
             background: var(--surface-card);
             border: 2px solid #dbeafe;
             border-radius: var(--card-radius);
             box-shadow: 0 12px 28px -8px rgba(37, 99, 235, 0.08);
-            transition: all 0.25s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
-        .card-custom:hover {
-            box-shadow: 0 18px 36px -8px rgba(37, 99, 235, 0.12);
+        @media (min-width: 992px) {
+            .card-custom:hover {
+                box-shadow: 0 18px 36px -8px rgba(37, 99, 235, 0.12);
+            }
         }
 
         /* Stat Counter Boxes */
@@ -51,7 +62,7 @@
         .stat-box-3 { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #fcd34d; border-radius: 20px; }
         .stat-box-4 { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border: 2px solid #f472b6; border-radius: 20px; }
 
-        /* Dynamic Live Ticker Bar */
+        /* Adaptable Market Ticker Bar */
         .market-ticker-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -59,6 +70,7 @@
             font-size: 0.88rem;
             white-space: nowrap;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
         }
         .market-ticker-bar::-webkit-scrollbar { display: none; }
@@ -67,81 +79,99 @@
             display: inline-flex;
             align-items: center;
             background: #ffffff;
-            border: 2px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             border-radius: 30px;
-            padding: 6px 18px;
+            padding: 6px 16px;
             margin: 4px 6px;
             font-weight: 700;
             box-shadow: 0 2px 6px rgba(0,0,0,0.03);
             transition: background 0.3s ease, transform 0.2s ease;
         }
-        .price-flash-up {
-            background: #dcfce7 !important;
-            transform: scale(1.04);
-        }
-        .price-flash-down {
-            background: #ffe4e6 !important;
-            transform: scale(1.04);
-        }
-
+        .price-flash-up { background: #dcfce7 !important; transform: scale(1.03); }
+        .price-flash-down { background: #ffe4e6 !important; transform: scale(1.03); }
         .text-up { color: var(--accent-mint); font-weight: 800; }
         .text-down { color: var(--accent-rose); font-weight: 800; }
 
-        /* Brand Logo Container Styling */
+        /* Responsive Brand Unit */
         .brand-link {
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 16px;
+            gap: clamp(10px, 2vw, 16px);
             cursor: pointer;
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
         .brand-link:hover {
-            opacity: 0.92;
+            opacity: 0.95;
             transform: translateY(-1px);
         }
         .brand-logo-img {
-            height: 64px;
+            height: clamp(48px, 5vw, 64px);
             width: auto;
             max-width: 200px;
             object-fit: contain;
             border-radius: 14px;
         }
+        .brand-title {
+            font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
         .brand-tagline {
-            font-size: 0.78rem;
+            font-size: clamp(0.68rem, 1.1vw, 0.78rem);
             font-weight: 700;
             color: #475569;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             display: block;
             margin-top: 2px;
         }
 
-        /* Buttons & Highlights */
+        /* Inputs & Form Controls (Smooth on both desktop mouse & touch devices) */
+        .form-control, .form-select {
+            font-size: 1rem;
+            border-radius: 14px;
+            border: 2px solid #cbd5e1;
+            padding: 11px 15px;
+            font-weight: 600;
+            min-height: 48px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Buttons */
+        .btn-brand, .btn-confirm-deal, .btn-dark {
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
         .btn-brand {
             background: linear-gradient(135deg, #0284c7 0%, #2563eb 50%, #4f46e5 100%);
             color: #fff;
-            font-weight: 700;
-            border-radius: var(--button-radius);
             border: none;
-            padding: 12px 20px;
             box-shadow: 0 6px 18px -3px rgba(37, 99, 235, 0.4);
-            transition: all 0.2s ease;
         }
         .btn-brand:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 22px -3px rgba(37, 99, 235, 0.5);
             color: #fff;
         }
-
+        .btn-brand:active, .btn-confirm-deal:active {
+            transform: scale(0.98);
+        }
         .btn-confirm-deal {
             background: linear-gradient(135deg, #10b981 0%, #0284c7 100%);
             color: #fff;
-            font-weight: 700;
-            border-radius: var(--button-radius);
             border: none;
             box-shadow: 0 6px 16px -3px rgba(16, 185, 129, 0.35);
-            transition: all 0.2s ease;
         }
         .btn-confirm-deal:hover {
             transform: translateY(-2px);
@@ -149,23 +179,11 @@
             color: #fff;
         }
 
-        .form-control, .form-select {
-            border-radius: 14px;
-            border: 2px solid #cbd5e1;
-            padding: 10px 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-        }
-
         /* Loading Screen */
         #loadingOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
@@ -175,14 +193,16 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.25s ease, visibility 0.25s ease;
+            padding: 20px;
+            text-align: center;
         }
         #loadingOverlay.active { opacity: 1; visibility: visible; }
 
-        .currency-spread { display: flex; gap: 14px; margin-bottom: 24px; }
+        .currency-spread { display: flex; gap: 12px; margin-bottom: 22px; }
         .currency-badge {
-            width: 56px; height: 56px; border-radius: 50%;
+            width: 52px; height: 52px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.7rem; font-weight: 800; color: white;
+            font-size: 1.6rem; font-weight: 800; color: white;
             box-shadow: 0 8px 18px rgba(0,0,0,0.12);
             animation: floatCurrency 1.2s infinite alternate ease-in-out;
         }
@@ -194,53 +214,52 @@
 
         @keyframes floatCurrency {
             0% { transform: translateY(0) scale(0.95); }
-            100% { transform: translateY(-16px) scale(1.05); }
+            100% { transform: translateY(-14px) scale(1.05); }
         }
 
         .nav-pills { background: #e0f2fe; padding: 6px; border-radius: 20px; }
-        .nav-pills .nav-link { border-radius: 16px; font-weight: 700; color: #475569; padding: 10px 18px; }
+        .nav-pills .nav-link { border-radius: 14px; font-weight: 700; color: #475569; padding: 10px 18px; }
         .nav-pills .nav-link.active {
             background: linear-gradient(135deg, #2563eb 0%, #0284c7 100%);
             color: #fff !important;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
-        .portfolio-bubble {
-            border: 2px solid #e2e8f0; border-radius: 20px; background: #ffffff; cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .portfolio-bubble:hover {
-            border-color: #93c5fd;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.08);
-            transform: translateY(-1px);
-        }
-        .expanded-details {
-            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 14px; margin-top: 10px; border-radius: 0 0 16px 16px; display: none;
-        }
-
-        /* CA Directory Card Styling */
-        .ca-card {
+        .portfolio-bubble, .ca-card {
             border: 2px solid #e2e8f0;
-            border-radius: 20px;
+            border-radius: 18px;
             background: #ffffff;
             transition: all 0.2s ease;
         }
-        .ca-card:hover {
+        .portfolio-bubble:hover, .ca-card:hover {
             border-color: #93c5fd;
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
             transform: translateY(-2px);
         }
         .ca-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
             color: #1d4ed8;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .expanded-details {
+            background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 14px; margin-top: 10px; border-radius: 0 0 16px 16px; display: none;
+        }
+
+        /* Fluid Spacing for Mobile & Desktop */
+        @media (max-width: 768px) {
+            .stat-box-1, .stat-box-2, .stat-box-3, .stat-box-4 { padding: 12px !important; }
+            .stat-box-1 .fs-3, .stat-box-2 .fs-3, .stat-box-3 .fs-3, .stat-box-4 .fs-3 { font-size: 1.35rem !important; }
+            .card-custom { padding: 18px !important; }
+            .nav-pills .nav-link { padding: 8px 12px; font-size: 0.88rem; }
         }
     </style>
 </head>
@@ -259,7 +278,7 @@
         <p class="text-muted small fw-semibold">Consulting Gemini AI to derive optimal asset allocations...</p>
     </div>
 
-    <!-- Live Ticker Bar -->
+    <!-- Live Ticker Bar (Seamless on desktop & swipeable on touch) -->
     <div class="market-ticker-bar py-2" id="marketTickerContainer">
         <div class="container text-center text-muted py-1 fw-bold">
             <i class="fa-solid fa-circle text-success fa-fade me-2" style="font-size: 0.75rem;"></i> Connecting to market feeds...
@@ -276,7 +295,7 @@
                      alt="OmniVest Logo"
                      onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\' viewBox=\'0 0 64 64\'><rect width=\'64\' height=\'64\' rx=\'16\' fill=\'%232563eb\'/><path d=\'M32 18L46 44H18Z\' fill=\'%23ffffff\'/></svg>';">
                 <div>
-                    <span class="fw-extrabold fs-3 text-dark d-block lh-sm">OmniVest</span>
+                    <span class="brand-title d-block">OmniVest</span>
                     <span class="brand-tagline">Invest Today. Secure Tomorrow.</span>
                 </div>
             </a>
@@ -286,8 +305,8 @@
 
     <div class="container pb-5">
         <!-- Auth View -->
-        <div id="authView" class="row justify-content-center my-4">
-            <div class="col-md-5">
+        <div id="authView" class="row justify-content-center my-3 my-md-4">
+            <div class="col-12 col-sm-10 col-md-7 col-lg-5">
                 <div class="card-custom p-4 p-md-5">
                     <div class="text-center mb-4">
                         <div class="d-inline-flex gap-2 mb-2">
@@ -320,7 +339,7 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label small fw-bold text-dark">Mobile Number</label>
-                                <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210">
+                                <input type="tel" id="custPhone" class="form-control" placeholder="e.g. 9876543210" pattern="[0-9]*" inputmode="numeric">
                             </div>
                             <button class="btn btn-brand w-100 py-3" onclick="handleLogin('customer')">
                                 Enter Planner
@@ -339,7 +358,7 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label small fw-bold text-dark">Passkey</label>
-                                <input type="text" id="adminPhone" class="form-control" value="0000000000">
+                                <input type="password" id="adminPhone" class="form-control" value="0000000000" inputmode="numeric">
                             </div>
                             <button class="btn btn-dark w-100 py-3 rounded-3 fw-bold" onclick="handleLogin('admin')">
                                 Open Admin Console
@@ -355,7 +374,7 @@
         <!-- Dashboard View -->
         <div id="dashboardView" style="display:none;">
             <!-- Summary Stats -->
-            <div class="row g-3 mb-4">
+            <div class="row g-2 g-md-3 mb-4">
                 <div class="col-6 col-md-3">
                     <div class="card-custom stat-box-1 p-3 text-center">
                         <small class="text-primary fw-bold" id="statPortfoliosLabel">Active Plans</small>
@@ -382,9 +401,9 @@
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE & CA MANAGEMENT SECTION -->
+            <!-- ADMIN NOTICE & CA REGISTRATION SECTION -->
             <div id="adminNoticeBanner" class="d-none mb-4">
-                <div class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4">
+                <div class="alert alert-info border-2 rounded-4 py-3 px-3 px-md-4 mb-4">
                     <div class="d-flex align-items-center">
                         <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
                         <div>
@@ -397,7 +416,7 @@
                 </div>
 
                 <!-- ADMIN ADD CA FORM -->
-                <div class="card-custom p-4 mb-4">
+                <div class="card-custom p-3 p-md-4 mb-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold text-dark mb-0">
                             <i class="fa-solid fa-user-tie text-primary me-2"></i> Register Chartered Accountant (CA)
@@ -406,32 +425,32 @@
                     </div>
 
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-muted">CA Name</label>
                             <input type="text" id="adminCaName" class="form-control" placeholder="e.g. CA Priya Mehta">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-muted">Email Address</label>
-                            <input type="email" id="adminCaEmail" class="form-control" placeholder="e.g. priya.mehta@omnivest.in">
+                            <input type="email" id="adminCaEmail" class="form-control" placeholder="e.g. priya.mehta@omnivest.in" inputmode="email">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-muted">Phone Number</label>
-                            <input type="tel" id="adminCaPhone" class="form-control" placeholder="e.g. +91 98765 43210">
+                            <input type="tel" id="adminCaPhone" class="form-control" placeholder="e.g. +91 98765 43210" inputmode="tel">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-4">
                             <label class="form-label small fw-bold text-muted">Experience</label>
                             <input type="text" id="adminCaExp" class="form-control" placeholder="e.g. 10 Years">
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-12 col-md-8">
                             <label class="form-label small fw-bold text-muted">Specialization</label>
                             <input type="text" id="adminCaSpec" class="form-control" placeholder="e.g. High Net Worth Tax Optimization & SIP Review">
                         </div>
                         <div class="col-12">
                             <label class="form-label small fw-bold text-muted">Resume / Professional Background</label>
-                            <textarea id="adminCaResume" rows="2" class="form-control" placeholder="Brief summary of certifications, corporate experience, ICAI registration, and advisory history..."></textarea>
+                            <textarea id="adminCaResume" rows="3" class="form-control" placeholder="Brief summary of certifications, corporate experience, ICAI registration, and advisory history..."></textarea>
                         </div>
                         <div class="col-12 text-end">
-                            <button class="btn btn-brand px-4 py-2" onclick="submitAdminCa()">
+                            <button class="btn btn-brand px-4 py-2 w-100 w-md-auto" onclick="submitAdminCa()">
                                 <i class="fa-solid fa-plus me-1"></i> Add CA to Directory
                             </button>
                         </div>
@@ -439,14 +458,14 @@
 
                     <hr class="my-4">
                     <h6 class="fw-bold text-dark mb-3">Currently Listed Chartered Accountants</h6>
-                    <div id="adminCaList" class="row g-3"></div>
+                    <div id="adminCaList" class="row g-2 g-md-3"></div>
                 </div>
             </div>
 
-            <!-- CUSTOMER-ONLY PLANNER SECTION -->
-            <div id="customerPlannerSection" class="row g-4 mb-4">
-                <div class="col-lg-5">
-                    <div class="card-custom p-4 h-100">
+            <!-- CUSTOMER-ONLY PLANNER SECTION (Adaptable Dual-Column Grid) -->
+            <div id="customerPlannerSection" class="row g-3 g-md-4 mb-4">
+                <div class="col-12 col-lg-5">
+                    <div class="card-custom p-3 p-md-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark">Plan Your Investment</h5>
 
                         <div class="mb-3">
@@ -485,12 +504,12 @@
                         <!-- Goal Container -->
                         <div class="mb-3" id="inputContainer">
                             <label class="form-label small fw-bold text-muted">Goal</label>
-                            <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
+                            <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Europe, start a café in Bangalore)..."></textarea>
                         </div>
 
                         <div class="mb-4" id="tenureContainer">
                             <label class="form-label small fw-bold text-muted">Years to Grow (Tenure)</label>
-                            <input type="number" id="yearsInput" class="form-control" value="3" min="1" max="30">
+                            <input type="number" id="yearsInput" class="form-control" value="3" min="1" max="30" inputmode="numeric">
                         </div>
 
                         <button id="calcBtn" class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
@@ -499,9 +518,9 @@
                     </div>
                 </div>
 
-                <div class="col-lg-7">
-                    <!-- Right container for AI Plan -->
-                    <div id="aiPlannerContainer" class="card-custom p-4 h-100">
+                <div class="col-12 col-lg-7">
+                    <!-- Right Container for AI Plan -->
+                    <div id="aiPlannerContainer" class="card-custom p-3 p-md-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark">AI-Derived Portfolio Allocation</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
@@ -510,11 +529,11 @@
                                 <span class="badge bg-light text-dark border p-2 fs-4">$</span>
                                 <span class="badge bg-light text-dark border p-2 fs-4">€</span>
                             </div>
-                            <p>Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
+                            <p class="mb-0">Configure parameters on the left. The AI will evaluate live market trends and duration to craft a customized strategy.</p>
                         </div>
 
                         <div id="aiReady" style="display:none;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
                                 <h5 class="fw-extrabold text-dark mb-0" id="resGoal">Goal</h5>
                                 <span class="badge rounded-pill bg-success text-white px-3 py-2" id="riskBadge">Mid Risk Strategy</span>
                             </div>
@@ -544,9 +563,9 @@
                                     <thead>
                                         <tr class="text-muted">
                                             <th>Asset Class</th>
-                                            <th>AI Determined Share</th>
+                                            <th>Share</th>
                                             <th>Principal (₹)</th>
-                                            <th>Projected Return (₹)</th>
+                                            <th>Est. Return (₹)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="allotmentTableBody"></tbody>
@@ -559,8 +578,8 @@
                         </div>
                     </div>
 
-                    <!-- Right container for CA Directory -->
-                    <div id="caDirectoryContainer" class="card-custom p-4 h-100 d-none">
+                    <!-- Right Container for CA Directory -->
+                    <div id="caDirectoryContainer" class="card-custom p-3 p-md-4 h-100 d-none">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold text-dark mb-0">
                                 <i class="fa-solid fa-user-tie text-primary me-2"></i> Verified Chartered Accountants
@@ -576,7 +595,7 @@
             </div>
 
             <!-- Ledger Records -->
-            <div class="card-custom p-4">
+            <div class="card-custom p-3 p-md-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                     <h5 class="fw-bold mb-0 text-dark">
                         <i class="fa-solid fa-folder-closed text-primary me-2"></i> <span id="ledgerTitleText">My Saved Portfolios</span>
@@ -596,7 +615,7 @@
             <div class="modal-content p-3 rounded-4">
                 <div class="modal-header border-bottom">
                     <div class="d-flex align-items-center gap-2">
-                        <div class="ca-avatar" style="width:40px; height:40px; font-size:1.1rem;" id="modalCaInitial">CA</div>
+                        <div class="ca-avatar" style="width:42px; height:42px; font-size:1.15rem;" id="modalCaInitial">CA</div>
                         <div>
                             <h5 class="modal-title fw-bold text-dark mb-0" id="modalCaName">CA Name</h5>
                             <small class="text-primary fw-bold" id="modalCaSpec">Specialization</small>
@@ -627,14 +646,14 @@
 
                     <div class="mb-3">
                         <label class="small fw-bold text-dark d-block mb-1">Credentials & Profile Summary</label>
-                        <div class="p-3 bg-light rounded-3 border small text-secondary" id="modalCaResume" style="white-space: pre-wrap; line-height: 1.5;"></div>
+                        <div class="p-3 bg-light rounded-3 border small text-secondary" id="modalCaResume" style="white-space: pre-wrap; line-height: 1.5; max-height: 180px; overflow-y: auto;"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-top d-flex justify-content-between">
-                    <a href="#" id="modalCaCallBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    <a href="#" id="modalCaCallBtn" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold">
                         <i class="fa-solid fa-phone me-1"></i> Call CA
                     </a>
-                    <a href="#" id="modalCaMailBtn" class="btn btn-sm btn-primary rounded-pill px-3">
+                    <a href="#" id="modalCaMailBtn" class="btn btn-primary rounded-pill px-3 py-2 fw-bold">
                         <i class="fa-solid fa-envelope me-1"></i> Send Email
                     </a>
                 </div>
@@ -744,7 +763,6 @@
             const caDirectoryContainer = document.getElementById('caDirectoryContainer');
 
             if (mode === 'ca') {
-                // Show CA Directory on the right
                 aiPlannerContainer.classList.add('d-none');
                 caDirectoryContainer.classList.remove('d-none');
 
@@ -761,13 +779,12 @@
                 `;
                 fetchCas();
             } else {
-                // Restore standard investment planning inputs
                 aiPlannerContainer.classList.remove('d-none');
                 caDirectoryContainer.classList.add('d-none');
 
                 riskContainer.style.display = 'block';
                 tenureContainer.style.display = 'block';
-                calcBtn.style.display = 'block';
+                calcBtn.style.display = 'inline-flex';
 
                 if (mode === 'goal') {
                     styleContainer.style.display = 'block';
@@ -779,13 +796,13 @@
                     styleContainer.style.display = 'none';
                     container.innerHTML = `
                         <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
-                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" value="10000" min="500">
+                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" value="10000" min="500" inputmode="numeric">
                     `;
                 } else {
                     styleContainer.style.display = 'none';
                     container.innerHTML = `
                         <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
-                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" value="50000" min="1000">
+                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" value="50000" min="1000" inputmode="numeric">
                     `;
                 }
             }
@@ -829,7 +846,7 @@
                                     <small class="text-primary fw-semibold">${ca.specialization}</small>
                                 </div>
                             </div>
-                            <span class="badge bg-light text-secondary border px-2 py-1">${ca.experience} Exp</span>
+                            <span class="badge bg-light text-secondary border px-2 py-1">${ca.experience}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
                             <div>
@@ -859,7 +876,7 @@
 
             globalCas.forEach(ca => {
                 container.innerHTML += `
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
                             <div>
                                 <strong class="text-dark d-block">${ca.name}</strong>
