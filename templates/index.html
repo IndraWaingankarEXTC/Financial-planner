@@ -101,7 +101,7 @@
             transform: translateY(-1px);
         }
         .brand-logo-img {
-            height: 64px; /* Enlarged logo */
+            height: 64px;
             width: auto;
             max-width: 200px;
             object-fit: contain;
@@ -216,6 +216,31 @@
         }
         .expanded-details {
             background: #f8fafc; border-top: 1px dashed #cbd5e1; padding: 14px; margin-top: 10px; border-radius: 0 0 16px 16px; display: none;
+        }
+
+        /* CA Directory Card Styling */
+        .ca-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .ca-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
+        }
+        .ca-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+            color: #1d4ed8;
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -357,16 +382,64 @@
                 </div>
             </div>
 
-            <!-- ADMIN NOTICE BANNER -->
-            <div id="adminNoticeBanner" class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4 d-none">
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Administrative Oversight Mode</h6>
-                        <span class="small text-secondary">
-                            You are reviewing all investor portfolios submitted across the platform. Investment planning tools are disabled for supervisory accounts.
-                        </span>
+            <!-- ADMIN NOTICE & CA MANAGEMENT SECTION -->
+            <div id="adminNoticeBanner" class="d-none mb-4">
+                <div class="alert alert-info border-2 rounded-4 py-3 px-4 mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-shield-halved fs-3 text-primary me-3"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Administrative Oversight Console</h6>
+                            <span class="small text-secondary">
+                                You can oversee all user investment submissions and register verified Chartered Accountants (CAs) into the customer consultation panel.
+                            </span>
+                        </div>
                     </div>
+                </div>
+
+                <!-- ADMIN ADD CA FORM -->
+                <div class="card-custom p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="fa-solid fa-user-tie text-primary me-2"></i> Register Chartered Accountant (CA)
+                        </h5>
+                        <span class="badge bg-primary-subtle text-primary border">Admin Directory</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">CA Name</label>
+                            <input type="text" id="adminCaName" class="form-control" placeholder="e.g. CA Priya Mehta">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Email Address</label>
+                            <input type="email" id="adminCaEmail" class="form-control" placeholder="e.g. priya.mehta@omnivest.in">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Phone Number</label>
+                            <input type="tel" id="adminCaPhone" class="form-control" placeholder="e.g. +91 98765 43210">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Experience</label>
+                            <input type="text" id="adminCaExp" class="form-control" placeholder="e.g. 10 Years">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold text-muted">Specialization</label>
+                            <input type="text" id="adminCaSpec" class="form-control" placeholder="e.g. High Net Worth Tax Optimization & SIP Review">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted">Resume / Professional Background</label>
+                            <textarea id="adminCaResume" rows="2" class="form-control" placeholder="Brief summary of certifications, corporate experience, ICAI registration, and advisory history..."></textarea>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button class="btn btn-brand px-4 py-2" onclick="submitAdminCa()">
+                                <i class="fa-solid fa-plus me-1"></i> Add CA to Directory
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="fw-bold text-dark mb-3">Currently Listed Chartered Accountants</h6>
+                    <div id="adminCaList" class="row g-3"></div>
                 </div>
             </div>
 
@@ -382,6 +455,7 @@
                                 <option value="goal">Custom Goal / Desire</option>
                                 <option value="budget">Monthly Savings Willingness (₹)</option>
                                 <option value="corpus">Exact Target Corpus Amount (₹)</option>
+                                <option value="ca">Ask an Expert CA (Tax & Wealth Audit)</option>
                             </select>
                         </div>
 
@@ -396,7 +470,7 @@
                         </div>
 
                         <!-- Risk Preference -->
-                        <div class="mb-3">
+                        <div class="mb-3" id="riskTierContainer">
                             <label class="form-label small fw-bold text-muted">Investment Risk Preference</label>
                             <select id="riskTierInput" class="form-select border-info-subtle">
                                 <option value="low">Low Risk</option>
@@ -414,19 +488,20 @@
                             <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-4" id="tenureContainer">
                             <label class="form-label small fw-bold text-muted">Years to Grow (Tenure)</label>
                             <input type="number" id="yearsInput" class="form-control" value="3" min="1" max="30">
                         </div>
 
-                        <button class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
+                        <button id="calcBtn" class="btn btn-brand w-100 py-3" onclick="computeAiPlan()">
                             Generate AI Market Plan
                         </button>
                     </div>
                 </div>
 
                 <div class="col-lg-7">
-                    <div class="card-custom p-4 h-100">
+                    <!-- Right container for AI Plan -->
+                    <div id="aiPlannerContainer" class="card-custom p-4 h-100">
                         <h5 class="fw-bold mb-3 text-dark">AI-Derived Portfolio Allocation</h5>
 
                         <div id="aiEmpty" class="text-center py-5 text-muted">
@@ -483,6 +558,20 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Right container for CA Directory -->
+                    <div id="caDirectoryContainer" class="card-custom p-4 h-100 d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark mb-0">
+                                <i class="fa-solid fa-user-tie text-primary me-2"></i> Verified Chartered Accountants
+                            </h5>
+                            <span class="badge bg-success-subtle text-success border">1-on-1 Consultation</span>
+                        </div>
+                        <p class="small text-muted mb-3">
+                            Connect with verified tax professionals and portfolio audit specialists to review your wealth plans, tax efficiency, and capital gains.
+                        </p>
+                        <div id="customerCaList" class="d-flex flex-column gap-3 overflow-auto" style="max-height: 520px;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -497,6 +586,58 @@
                     </a>
                 </div>
                 <div id="ledgerContainer" class="d-flex flex-column gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CA Resume / Profile Modal -->
+    <div class="modal fade" id="caResumeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3 rounded-4">
+                <div class="modal-header border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="ca-avatar" style="width:40px; height:40px; font-size:1.1rem;" id="modalCaInitial">CA</div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="modalCaName">CA Name</h5>
+                            <small class="text-primary fw-bold" id="modalCaSpec">Specialization</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="row g-2 mb-3 text-center">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 border">
+                                <small class="text-muted d-block">Experience</small>
+                                <strong class="text-dark" id="modalCaExp">10 Years</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded-3 border">
+                                <small class="text-muted d-block">Contact Phone</small>
+                                <strong class="text-dark" id="modalCaPhone">+91 00000 00000</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-dark d-block mb-1">Email</label>
+                        <div class="p-2 bg-light rounded-3 border small" id="modalCaEmail">ca@omnivest.in</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-dark d-block mb-1">Credentials & Profile Summary</label>
+                        <div class="p-3 bg-light rounded-3 border small text-secondary" id="modalCaResume" style="white-space: pre-wrap; line-height: 1.5;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top d-flex justify-content-between">
+                    <a href="#" id="modalCaCallBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                        <i class="fa-solid fa-phone me-1"></i> Call CA
+                    </a>
+                    <a href="#" id="modalCaMailBtn" class="btn btn-sm btn-primary rounded-pill px-3">
+                        <i class="fa-solid fa-envelope me-1"></i> Send Email
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -539,6 +680,7 @@
         let activePlan = null;
         let lastPrices = {};
         let currentUserIsAdmin = false;
+        let globalCas = [];
 
         function showLoading(msg = "Crunching numbers...") {
             document.getElementById('loadingText').innerText = msg;
@@ -594,25 +736,212 @@
             const mode = document.getElementById('planningMode').value;
             const container = document.getElementById('inputContainer');
             const styleContainer = document.getElementById('travelStyleContainer');
+            const riskContainer = document.getElementById('riskTierContainer');
+            const tenureContainer = document.getElementById('tenureContainer');
+            const calcBtn = document.getElementById('calcBtn');
 
-            if (mode === 'goal') {
-                styleContainer.style.display = 'block';
-                container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Goal</label>
-                    <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
-                `;
-            } else if (mode === 'budget') {
+            const aiPlannerContainer = document.getElementById('aiPlannerContainer');
+            const caDirectoryContainer = document.getElementById('caDirectoryContainer');
+
+            if (mode === 'ca') {
+                // Show CA Directory on the right
+                aiPlannerContainer.classList.add('d-none');
+                caDirectoryContainer.classList.remove('d-none');
+
                 styleContainer.style.display = 'none';
+                riskContainer.style.display = 'none';
+                tenureContainer.style.display = 'none';
+                calcBtn.style.display = 'none';
+
                 container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
-                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" value="10000" min="500">
+                    <div class="p-3 bg-light border rounded-3 text-secondary small">
+                        <strong class="text-dark"><i class="fa-solid fa-info-circle text-primary me-1"></i> Consult an Expert CA:</strong><br>
+                        Select a certified Chartered Accountant from the verified directory on the right. You can review their full resume, credentials, and reach out directly for tax planning and portfolio audits.
+                    </div>
                 `;
+                fetchCas();
             } else {
-                styleContainer.style.display = 'none';
-                container.innerHTML = `
-                    <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
-                    <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" value="50000" min="1000">
+                // Restore standard investment planning inputs
+                aiPlannerContainer.classList.remove('d-none');
+                caDirectoryContainer.classList.add('d-none');
+
+                riskContainer.style.display = 'block';
+                tenureContainer.style.display = 'block';
+                calcBtn.style.display = 'block';
+
+                if (mode === 'goal') {
+                    styleContainer.style.display = 'block';
+                    container.innerHTML = `
+                        <label class="form-label small fw-bold text-muted">Goal</label>
+                        <textarea id="statementInput" rows="3" class="form-control" placeholder="Write your custom goal or desire here (e.g. I want to buy an EV, 100 days trip to Netherlands, start a café in Bangalore)..."></textarea>
+                    `;
+                } else if (mode === 'budget') {
+                    styleContainer.style.display = 'none';
+                    container.innerHTML = `
+                        <label class="form-label small fw-bold text-muted">Monthly Savings Willingness (₹)</label>
+                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 10000" value="10000" min="500">
+                    `;
+                } else {
+                    styleContainer.style.display = 'none';
+                    container.innerHTML = `
+                        <label class="form-label small fw-bold text-muted">Target Final Payout Goal (₹)</label>
+                        <input type="number" id="statementInput" class="form-control" placeholder="e.g. 50000" value="50000" min="1000">
+                    `;
+                }
+            }
+        }
+
+        async function fetchCas() {
+            try {
+                const res = await fetch('/api/cas');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    globalCas = data.cas || [];
+                    renderCustomerCas();
+                    if (currentUserIsAdmin) {
+                        renderAdminCas();
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching CAs:", e);
+            }
+        }
+
+        function renderCustomerCas() {
+            const container = document.getElementById('customerCaList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (globalCas.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-muted">No Chartered Accountants listed yet.</div>';
+                return;
+            }
+
+            globalCas.forEach(ca => {
+                const initial = ca.name.replace(/^CA\s*/, '').charAt(0) || 'C';
+                container.innerHTML += `
+                    <div class="ca-card p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="ca-avatar">${initial}</div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">${ca.name}</h6>
+                                    <small class="text-primary fw-semibold">${ca.specialization}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-secondary border px-2 py-1">${ca.experience} Exp</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                            <div>
+                                <small class="text-muted d-block fw-bold" style="font-size:0.75rem;">Direct Contact:</small>
+                                <a href="tel:${ca.phone}" class="text-dark fw-bold text-decoration-none small">
+                                    <i class="fa-solid fa-phone me-1 text-success"></i> ${ca.phone}
+                                </a>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onclick="openCaResume(${ca.id})">
+                                View Profile & Resume
+                            </button>
+                        </div>
+                    </div>
                 `;
+            });
+        }
+
+        function renderAdminCas() {
+            const container = document.getElementById('adminCaList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (globalCas.length === 0) {
+                container.innerHTML = '<div class="col-12 text-muted small">No CAs registered yet.</div>';
+                return;
+            }
+
+            globalCas.forEach(ca => {
+                container.innerHTML += `
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="text-dark d-block">${ca.name}</strong>
+                                <small class="text-muted">${ca.specialization} (${ca.experience})</small><br>
+                                <small class="text-secondary">${ca.phone} | ${ca.email}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAdminCa(${ca.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openCaResume(id) {
+            const ca = globalCas.find(c => c.id === id);
+            if (!ca) return;
+
+            const initial = ca.name.replace(/^CA\s*/, '').charAt(0) || 'C';
+            document.getElementById('modalCaInitial').innerText = initial;
+            document.getElementById('modalCaName').innerText = ca.name;
+            document.getElementById('modalCaSpec').innerText = ca.specialization;
+            document.getElementById('modalCaExp').innerText = ca.experience;
+            document.getElementById('modalCaPhone').innerText = ca.phone;
+            document.getElementById('modalCaEmail').innerText = ca.email;
+            document.getElementById('modalCaResume').innerText = ca.resume;
+
+            document.getElementById('modalCaCallBtn').href = `tel:${ca.phone}`;
+            document.getElementById('modalCaMailBtn').href = `mailto:${ca.email}?subject=Consultation Inquiry via OmniVest`;
+
+            const modal = new bootstrap.Modal(document.getElementById('caResumeModal'));
+            modal.show();
+        }
+
+        async function submitAdminCa() {
+            const name = document.getElementById('adminCaName').value.trim();
+            const email = document.getElementById('adminCaEmail').value.trim();
+            const phone = document.getElementById('adminCaPhone').value.trim();
+            const exp = document.getElementById('adminCaExp').value.trim();
+            const spec = document.getElementById('adminCaSpec').value.trim();
+            const resume = document.getElementById('adminCaResume').value.trim();
+
+            if (!name || !email || !phone) {
+                alert("Please fill in the CA's name, email, and phone number.");
+                return;
+            }
+
+            showLoading("Adding CA to database...");
+            try {
+                const res = await fetch('/api/admin/cas', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, email, phone, experience: exp, specialization: spec, resume})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('adminCaName').value = '';
+                    document.getElementById('adminCaEmail').value = '';
+                    document.getElementById('adminCaPhone').value = '';
+                    document.getElementById('adminCaExp').value = '';
+                    document.getElementById('adminCaSpec').value = '';
+                    document.getElementById('adminCaResume').value = '';
+                    fetchCas();
+                } else {
+                    alert(data.message || "Failed to add CA.");
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function deleteAdminCa(id) {
+            if (!confirm("Are you sure you want to remove this CA from the directory?")) return;
+            showLoading("Removing CA...");
+            try {
+                const res = await fetch(`/api/admin/cas/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    fetchCas();
+                }
+            } finally {
+                hideLoading();
             }
         }
 
@@ -638,6 +967,7 @@
                     currentUserIsAdmin = !!data.is_admin;
                     applyUserInterface(data.username, currentUserIsAdmin);
                     loadLedger();
+                    fetchCas();
                 } else {
                     document.getElementById('authError').innerText = data.message;
                     document.getElementById('authError').style.display = 'block';
@@ -704,7 +1034,6 @@
                 return;
             }
 
-            // Clear previous results immediately
             activePlan = null;
             document.getElementById('aiReady').style.display = 'none';
             document.getElementById('aiEmpty').style.display = 'block';
